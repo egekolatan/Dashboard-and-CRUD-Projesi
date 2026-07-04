@@ -2,7 +2,7 @@
 const loggedInUser = JSON.parse(localStorage.getItem('auth_crud_current_user'));
 if (!loggedInUser || loggedInUser.email !== 'egekolatan114@gmail.com') {
     // Giriş yapılmadıysa veya yanlış kullanıcıysa doğrudan giriş sayfasına yönlendir
-    window.location.href = '../auth-crud/index.html';
+    window.location.href = '../auth-crud/';
 }
 
 // App State Managers & Storage Keys
@@ -811,7 +811,7 @@ function updateUsernameUI() {
         profile.onclick = () => {
             if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
                 localStorage.removeItem('auth_crud_current_user');
-                window.location.href = '../auth-crud/index.html';
+                window.location.href = '../auth-crud/';
             }
         };
     }

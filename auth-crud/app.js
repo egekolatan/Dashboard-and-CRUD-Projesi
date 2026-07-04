@@ -93,7 +93,7 @@ function setupAuthEvents() {
             
             // 1.5 saniye sonra dashboard sayfasına yönlendir
             setTimeout(() => {
-                window.location.href = '../dashboard/index.html';
+                window.location.href = '../dashboard/';
             }, 1500);
         } else {
             // Hatalı giriş: Hata mesajı göster
