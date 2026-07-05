@@ -108,6 +108,7 @@
                         <div class="welcome-banner-content">
                             <h2 class="welcome-greeting" id="welcome-greeting-text">Yükleniyor...</h2>
                             <p class="welcome-message" id="welcome-message-text">Bugün kontrol etmeniz gereken işler bulunuyor.</p>
+                            <div class="welcome-quote" id="welcome-quote-el">💡 <em>Hayal edebildiğin her şey gerçektir.</em></div>
                         </div>
                         <div class="welcome-weather">
                             <span class="weather-icon" id="weather-icon-el">☀️</span>
@@ -282,8 +283,13 @@
                                     <h4 id="fin-expense-total">₺0.00</h4>
                                 </div>
                             </div>
-                            <div class="finance-chart-container">
-                                <canvas id="financePieChart"></canvas>
+                            <div class="finance-charts-wrapper">
+                                <div class="finance-chart-container">
+                                    <canvas id="financePieChart"></canvas>
+                                </div>
+                                <div class="finance-chart-container">
+                                    <canvas id="financeCategoryChart"></canvas>
+                                </div>
                             </div>
                         </div>
 
@@ -303,9 +309,20 @@
                                         <label for="fin-type">Tür</label>
                                         <select id="fin-type">
                                             <option value="income">Gelir</option>
-                                            <option value="expense">Gider</option>
+                                            <option value="expense" selected>Gider</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fin-category">Kategori</label>
+                                    <select id="fin-category">
+                                        <option value="fatura">Fatura</option>
+                                        <option value="market">Market / Gıda</option>
+                                        <option value="kira">Kira</option>
+                                        <option value="eglence">Eğlence / Sosyal</option>
+                                        <option value="maas">Maaş</option>
+                                        <option value="diger" selected>Diğer</option>
+                                    </select>
                                 </div>
                                 <button type="submit" class="btn btn-primary">İşlem Ekle</button>
                             </form>
@@ -321,12 +338,23 @@
                     </div>
 
                     <div class="card-panel finance-ledger">
-                        <h3>Tüm İşlemler</h3>
+                        <div class="ledger-header">
+                            <h3>Tüm İşlemler</h3>
+                            <div class="ledger-controls">
+                                <input type="text" id="finance-search" placeholder="İşlemlerde ara...">
+                                <select id="finance-filter-type">
+                                    <option value="all">Tüm İşlemler</option>
+                                    <option value="income">Sadece Gelirler</option>
+                                    <option value="expense">Sadece Giderler</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="table-responsive">
                             <table class="ledger-table">
                                 <thead>
                                     <tr>
                                         <th>Açıklama</th>
+                                        <th>Kategori</th>
                                         <th>Tür</th>
                                         <th>Tutar</th>
                                         <th>Tarih</th>
@@ -357,6 +385,13 @@
                             </div>
                             <textarea id="note-body-input" placeholder="Not yazmaya başlayın..." disabled></textarea>
                             <div class="note-editor-footer">
+                                <div class="note-color-picker" id="note-color-picker">
+                                    <button class="color-dot active" data-color="default" style="background-color: #6b7280;" title="Varsayılan"></button>
+                                    <button class="color-dot" data-color="red" style="background-color: #ef4444;" title="Önemli"></button>
+                                    <button class="color-dot" data-color="green" style="background-color: #10b981;" title="Fikir"></button>
+                                    <button class="color-dot" data-color="blue" style="background-color: #3b82f6;" title="İş"></button>
+                                    <button class="color-dot" data-color="yellow" style="background-color: #f59e0b;" title="Kişisel"></button>
+                                </div>
                                 <button class="btn btn-danger" id="delete-note-btn" disabled>Notu Sil</button>
                             </div>
                         </div>
@@ -405,6 +440,39 @@
                 </section>
             </div>
         </main>
+    </div>
+
+    <!-- Konfeti Efekti İçin Canvas -->
+    <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999;"></canvas>
+
+    <!-- Klavye Kısayolları Yardım Modalı -->
+    <div class="shortcut-modal" id="shortcut-modal">
+        <div class="shortcut-modal-content">
+            <div class="shortcut-modal-header">
+                <h3>⌨️ Klavye Kısayolları Kılavuzu</h3>
+                <button class="shortcut-close-btn" id="shortcut-close">&times;</button>
+            </div>
+            <div class="shortcut-table-container">
+                <table class="shortcut-table">
+                    <thead>
+                        <tr>
+                            <th>Kısayol</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><kbd>1</kbd> veya <kbd>O</kbd></td><td>Genel Bakış Sekmesine Git</td></tr>
+                        <tr><td><kbd>2</kbd> veya <kbd>T</kbd></td><td>Görevler Sekmesine Git</td></tr>
+                        <tr><td><kbd>3</kbd> veya <kbd>F</kbd></td><td>Bütçe Sekmesine Git</td></tr>
+                        <tr><td><kbd>4</kbd> veya <kbd>N</kbd></td><td>Notlar Sekmesine Git</td></tr>
+                        <tr><td><kbd>5</kbd> veya <kbd>S</kbd></td><td>Ayarlar Sekmesine Git</td></tr>
+                        <tr><td><kbd>P</kbd></td><td>Pomodoro Zamanlayıcıyı Başlat / Duraklat</td></tr>
+                        <tr><td><kbd>?</kbd></td><td>Kısayol Kılavuzunu Aç / Kapat</td></tr>
+                        <tr><td><kbd>Esc</kbd></td><td>Kılavuzu Kapat</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Script -->

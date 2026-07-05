@@ -1699,3 +1699,228 @@ body {
     box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
 }
 
+/* ----------------------------------------------------
+   6. YENİ İLERİ DÜZEY ÖZELLİKLER (KILAVUZ, RENKLER, FİLTRE, GRAFİK)
+   ---------------------------------------------------- */
+
+/* Karşılama Sözü */
+.welcome-quote {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    border-left: 2px solid var(--accent-color);
+}
+
+/* Kısayol Yardım Modalı */
+.shortcut-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.shortcut-modal.active {
+    display: flex;
+}
+
+.shortcut-modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 480px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.shortcut-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.shortcut-modal-header h3 {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.shortcut-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.shortcut-close-btn:hover {
+    color: var(--text-primary);
+}
+
+.shortcut-table-container {
+    width: 100%;
+}
+
+.shortcut-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.shortcut-table th, .shortcut-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.shortcut-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.shortcut-table td kbd {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    font-family: monospace;
+    font-weight: bold;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+}
+
+[data-theme="light"] .shortcut-table td kbd {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+}
+
+/* Not Renklendirme Stilleri */
+.note-color-picker {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    padding: 0;
+}
+
+.color-dot:hover {
+    transform: scale(1.2);
+}
+
+.color-dot.active {
+    border-color: white;
+    box-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+
+/* Dinamik Not Kartı & Editör Renkleri */
+.notes-list li.note-red { border-left: 4px solid #ef4444 !important; }
+.notes-list li.note-green { border-left: 4px solid #10b981 !important; }
+.notes-list li.note-blue { border-left: 4px solid #3b82f6 !important; }
+.notes-list li.note-yellow { border-left: 4px solid #f59e0b !important; }
+
+/* Editör Yumuşak Ton Arka Plan Renkleri */
+.note-editor.note-red { background: rgba(239, 68, 68, 0.05) !important; }
+.note-editor.note-green { background: rgba(16, 185, 129, 0.05) !important; }
+.note-editor.note-blue { background: rgba(59, 130, 246, 0.05) !important; }
+.note-editor.note-yellow { background: rgba(245, 158, 11, 0.05) !important; }
+
+/* Bütçe Çift Grafik Yerleşimi */
+.finance-charts-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .finance-charts-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+.finance-charts-wrapper .finance-chart-container {
+    height: 180px;
+    position: relative;
+}
+
+/* Bütçe Arama ve Filtreleme */
+.ledger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.ledger-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+#finance-search {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    width: 180px;
+    transition: var(--transition-fast);
+}
+
+#finance-search:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+#finance-filter-type {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+[data-theme="light"] #finance-search, 
+[data-theme="light"] #finance-filter-type {
+    background: rgba(0, 0, 0, 0.03);
+    color: var(--text-primary);
+}
+
+

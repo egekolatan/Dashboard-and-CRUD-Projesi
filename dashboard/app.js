@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initWelcomeBanner();
     initPomodoro();
     initNotifications();
+    initShortcuts();
 });
 
 // ----------------------------------------------------
@@ -473,6 +474,9 @@ window.toggleTask = function(id) {
         if (task.id === id) {
             const nextCompleted = !task.completed;
             addNotification(`Görev ${nextCompleted ? 'tamamlandı' : 'yapılacak olarak işaretlendi'}: ${task.title}`);
+            if (nextCompleted && typeof triggerConfetti === 'function') {
+                triggerConfetti();
+            }
             return { ...task, completed: nextCompleted };
         }
         return task;
@@ -503,6 +507,7 @@ function initFinancePanel() {
     const finTitle = document.getElementById('fin-title');
     const finAmount = document.getElementById('fin-amount');
     const finType = document.getElementById('fin-type');
+    const finCategory = document.getElementById('fin-category');
     
     financeForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -512,6 +517,7 @@ function initFinancePanel() {
             title: finTitle.value,
             amount: parseFloat(finAmount.value),
             type: finType.value,
+            category: finCategory.value,
             date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })
         };
         
@@ -526,9 +532,73 @@ function initFinancePanel() {
         addNotification(`Finans işlemi eklendi: ${newTransaction.title} (₺${newTransaction.amount.toFixed(2)})`);
     });
     
+    const searchInput = document.getElementById('finance-search');
+    const filterSelect = document.getElementById('finance-filter-type');
+    if (searchInput) searchInput.addEventListener('input', () => renderFinance(false));
+    if (filterSelect) filterSelect.addEventListener('change', () => renderFinance(false));
+    
     initFinancePieChart();
+    initFinanceCategoryChart();
     renderFinance();
     if (typeof updateFinanceTrendChart === 'function') updateFinanceTrendChart();
+}
+
+let financeCategoryChartInstance = null;
+function initFinanceCategoryChart() {
+    const canvas = document.getElementById('financeCategoryChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    financeCategoryChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Fatura', 'Market', 'Kira', 'Eğlence', 'Maaş', 'Diğer'],
+            datasets: [{
+                data: [0, 0, 0, 0, 0, 0],
+                backgroundColor: ['#f87171', '#fb923c', '#60a5fa', '#c084fc', '#34d399', '#94a3b8'],
+                borderWidth: 2,
+                borderColor: state.theme === 'dark' ? '#152035' : '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: state.theme === 'dark' ? '#9ca3af' : '#64748b',
+                        font: { family: 'Inter', size: 10 }
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+}
+
+function updateFinanceCategoryChart() {
+    if (!financeCategoryChartInstance) return;
+    
+    const categories = ['fatura', 'market', 'kira', 'eglence', 'maas', 'diger'];
+    const categoryTotals = { fatura: 0, market: 0, kira: 0, eglence: 0, maas: 0, diger: 0 };
+    
+    state.transactions.forEach(tx => {
+        if (tx.type === 'expense') {
+            const cat = tx.category || 'diger';
+            if (categoryTotals[cat] !== undefined) {
+                categoryTotals[cat] += tx.amount;
+            } else {
+                categoryTotals.diger += tx.amount;
+            }
+        }
+    });
+    
+    const data = categories.map(cat => categoryTotals[cat]);
+    financeCategoryChartInstance.data.datasets[0].data = data;
+    financeCategoryChartInstance.data.datasets[0].borderColor = state.theme === 'dark' ? '#152035' : '#ffffff';
+    financeCategoryChartInstance.options.plugins.legend.labels.color = state.theme === 'dark' ? '#9ca3af' : '#64748b';
+    financeCategoryChartInstance.update();
 }
 
 function initFinancePieChart() {
@@ -562,20 +632,53 @@ function initFinancePieChart() {
     });
 }
 
-function renderFinance() {
+function renderFinance(updateSummary = true) {
     const ledgerBody = document.getElementById('ledger-body');
+    if (!ledgerBody) return;
     ledgerBody.innerHTML = '';
     
     let totalIncome = 0;
     let totalExpense = 0;
     
+    // Always compute totals over all transactions
     state.transactions.forEach(tx => {
         if (tx.type === 'income') totalIncome += tx.amount;
         else totalExpense += tx.amount;
-        
+    });
+
+    const searchQuery = document.getElementById('finance-search')?.value.toLowerCase() || '';
+    const filterType = document.getElementById('finance-filter-type')?.value || 'all';
+    
+    const filteredTransactions = state.transactions.filter(tx => {
+        const titleMatch = tx.title.toLowerCase().includes(searchQuery);
+        const catNameMap = {
+            fatura: 'fatura',
+            market: 'market gıda market/gıda',
+            kira: 'kira',
+            eglence: 'eğlence sosyal eğlence/sosyal',
+            maas: 'maaş',
+            diger: 'diğer'
+        };
+        const catMatch = (catNameMap[tx.category] || 'diğer').includes(searchQuery) || (tx.category || '').includes(searchQuery);
+        const matchesSearch = titleMatch || catMatch;
+        const matchesType = filterType === 'all' || tx.type === filterType;
+        return matchesSearch && matchesType;
+    });
+    
+    filteredTransactions.forEach(tx => {
         const tr = document.createElement('tr');
+        const catLabels = {
+            fatura: 'Fatura',
+            market: 'Market / Gıda',
+            kira: 'Kira',
+            eglence: 'Eğlence / Sosyal',
+            maas: 'Maaş',
+            diger: 'Diğer'
+        };
+        const displayCategory = catLabels[tx.category] || 'Diğer';
         tr.innerHTML = `
             <td>${tx.title}</td>
+            <td><span class="badge-cat">${displayCategory}</span></td>
             <td><span class="badge-fin-type ${tx.type}">${tx.type === 'income' ? 'Gelir' : 'Gider'}</span></td>
             <td class="tx-amount ${tx.type}">₺${tx.amount.toFixed(2)}</td>
             <td>${tx.date}</td>
@@ -588,24 +691,28 @@ function renderFinance() {
         ledgerBody.appendChild(tr);
     });
     
-    if (state.transactions.length === 0) {
-        ledgerBody.innerHTML = `<tr><td colspan="5" class="empty-msg">İşlem kaydı bulunmuyor.</td></tr>`;
+    if (filteredTransactions.length === 0) {
+        ledgerBody.innerHTML = `<tr><td colspan="6" class="empty-msg">İşlem kaydı bulunmuyor.</td></tr>`;
     }
     
-    // Update summary texts
-    document.getElementById('fin-income-total').textContent = `₺${totalIncome.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('fin-expense-total').textContent = `₺${totalExpense.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-    
-    // Update pie chart
-    if (financePieChartInstance) {
-        financePieChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
-        financePieChartInstance.data.datasets[0].borderColor = state.theme === 'dark' ? '#152035' : '#ffffff';
-        financePieChartInstance.options.plugins.legend.labels.color = state.theme === 'dark' ? '#9ca3af' : '#64748b';
-        financePieChartInstance.update();
-    }
+    if (updateSummary) {
+        // Update summary texts
+        document.getElementById('fin-income-total').textContent = `₺${totalIncome.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('fin-expense-total').textContent = `₺${totalExpense.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+        
+        // Update charts
+        if (financePieChartInstance) {
+            financePieChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
+            financePieChartInstance.data.datasets[0].borderColor = state.theme === 'dark' ? '#152035' : '#ffffff';
+            financePieChartInstance.options.plugins.legend.labels.color = state.theme === 'dark' ? '#9ca3af' : '#64748b';
+            financePieChartInstance.update();
+        }
+        
+        updateFinanceCategoryChart();
 
-    if (typeof updateFinanceTrendChart === 'function') {
-        updateFinanceTrendChart();
+        if (typeof updateFinanceTrendChart === 'function') {
+            updateFinanceTrendChart();
+        }
     }
 }
 
@@ -629,12 +736,14 @@ function initNotesPanel() {
     const noteBodyInput = document.getElementById('note-body-input');
     const deleteNoteBtn = document.getElementById('delete-note-btn');
     const noteSaveIndicator = document.getElementById('note-save-status');
+    const colorDots = document.querySelectorAll('#note-color-picker .color-dot');
     
     newNoteBtn.addEventListener('click', () => {
         const newNote = {
             id: Date.now().toString(),
             title: 'Yeni Not',
             body: '',
+            color: 'default',
             date: new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })
         };
         
@@ -646,10 +755,16 @@ function initNotesPanel() {
         
         renderNotesSidebar();
         selectNote(newNote.id);
+        addNotification("Yeni bir not oluşturuldu.");
     });
     
     deleteNoteBtn.addEventListener('click', () => {
         if (!state.activeNoteId) return;
+        
+        const note = state.notes.find(n => n.id === state.activeNoteId);
+        if (note) {
+            addNotification(`Not silindi: ${note.title}`);
+        }
         
         state.notes = state.notes.filter(n => n.id !== state.activeNoteId);
         saveState(KEYS.NOTES, state.notes);
@@ -663,6 +778,32 @@ function initNotesPanel() {
         } else {
             clearNoteEditor();
         }
+    });
+    
+    // Bind color dot click handlers
+    colorDots.forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!state.activeNoteId) return;
+            
+            const color = dot.dataset.color;
+            colorDots.forEach(d => d.classList.remove('active'));
+            dot.classList.add('active');
+            
+            state.notes = state.notes.map(n => {
+                if (n.id === state.activeNoteId) {
+                    return { ...n, color: color };
+                }
+                return n;
+            });
+            saveState(KEYS.NOTES, state.notes);
+            renderNotesSidebar();
+            
+            const editor = document.getElementById('note-editor-container');
+            if (editor) {
+                editor.className = `card-panel note-editor note-${color}`;
+            }
+        });
     });
     
     // Auto-save logic on input
@@ -724,7 +865,8 @@ function renderNotesSidebar() {
     
     state.notes.forEach(note => {
         const li = document.createElement('li');
-        li.className = `note-item ${note.id === state.activeNoteId ? 'active' : ''}`;
+        const noteColor = note.color || 'default';
+        li.className = `note-item note-${noteColor} ${note.id === state.activeNoteId ? 'active' : ''}`;
         li.dataset.id = note.id;
         li.innerHTML = `
             <div class="note-item-title">${note.title || 'Başlıksız Not'}</div>
@@ -758,6 +900,23 @@ function selectNote(id) {
     
     noteTitleInput.value = note.title;
     noteBodyInput.value = note.body;
+    
+    // Highlight the active dot
+    const noteColor = note.color || 'default';
+    const colorDots = document.querySelectorAll('#note-color-picker .color-dot');
+    colorDots.forEach(d => {
+        if (d.dataset.color === noteColor) {
+            d.classList.add('active');
+        } else {
+            d.classList.remove('active');
+        }
+    });
+    
+    // Apply background color to editor wrapper
+    const editor = document.getElementById('note-editor-container');
+    if (editor) {
+        editor.className = `card-panel note-editor note-${noteColor}`;
+    }
 }
 
 function clearNoteEditor() {
@@ -771,6 +930,13 @@ function clearNoteEditor() {
     
     noteTitleInput.value = '';
     noteBodyInput.value = '';
+    
+    const editor = document.getElementById('note-editor-container');
+    if (editor) {
+        editor.className = `card-panel note-editor`;
+    }
+    const colorDots = document.querySelectorAll('#note-color-picker .color-dot');
+    colorDots.forEach(d => d.classList.remove('active'));
 }
 
 // ----------------------------------------------------
@@ -1193,5 +1359,165 @@ function updateFinanceTrendChart() {
             }
         }
     });
+}
+
+// ----------------------------------------------------
+// MOTİVASYON SÖZLERİ VERİ BANKASI
+// ----------------------------------------------------
+const MOTIVATIONAL_QUOTES = [
+    "Hayal edebildiğin her şey gerçektir. - Pablo Picasso",
+    "Gelecek, bugünden ona hazırlananlarındır. - Malcolm X",
+    "Düşünmek kolaydır, yapmak zordur. - Goethe",
+    "Başarı bir yolculuktur, varış noktası değil. - Ben Sweetland",
+    "Odaklanmak, hayır diyebilme sanatıdır. - Steve Jobs",
+    "Küçük adımlar, büyük sonuçlar doğurur. - Anonim",
+    "Bugün yapacağın şeyler, yarınki seni belirler. - Anonim"
+];
+
+// ----------------------------------------------------
+// KLAVYE KISAYOLLARI VE YARDIM MODALI
+// ----------------------------------------------------
+function initShortcuts() {
+    const modal = document.getElementById('shortcut-modal');
+    const closeBtn = document.getElementById('shortcut-close');
+    
+    if (closeBtn && modal) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+    
+    window.addEventListener('keyup', (e) => {
+        const activeTag = document.activeElement.tagName.toLowerCase();
+        if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+            // Form elemanına yazarken kısayollar çalışmasın
+            if (e.key === 'Escape') {
+                document.activeElement.blur();
+            }
+            return;
+        }
+        
+        const key = e.key.toLowerCase();
+        
+        // Escape ile modali/dropdownları kapa
+        if (e.key === 'Escape') {
+            if (modal) modal.classList.remove('active');
+            const notifDropdown = document.getElementById('notif-dropdown');
+            if (notifDropdown) notifDropdown.classList.remove('active');
+        }
+        
+        // ? Tuşu kılavuzu açar/kapatır
+        if (e.key === '?' || e.key === '/') {
+            if (modal) modal.classList.toggle('active');
+        }
+        
+        // Sekmeler arası geçiş kısayolları
+        let targetTab = null;
+        if (key === '1' || key === 'o') targetTab = 'overview';
+        if (key === '2' || key === 't') targetTab = 'tasks';
+        if (key === '3' || key === 'f') targetTab = 'finance';
+        if (key === '4' || key === 'n') targetTab = 'notes';
+        if (key === '5' || key === 's') targetTab = 'settings';
+        
+        if (targetTab) {
+            const btn = document.querySelector(`.nav-item[data-tab="${targetTab}"]`);
+            if (btn) btn.click();
+        }
+        
+        // Pomodoro kısayolu
+        if (key === 'p') {
+            const startBtn = document.getElementById('pomodoro-start');
+            if (startBtn) startBtn.click();
+        }
+    });
+}
+
+// Akıllı Karşılama Kartına Motivasyon Sözü Yüklenmesi
+const originalInitWelcome = initWelcomeBanner;
+initWelcomeBanner = function() {
+    if (typeof originalInitWelcome === 'function') originalInitWelcome();
+    
+    const quoteEl = document.getElementById('welcome-quote-el');
+    if (quoteEl) {
+        const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+        quoteEl.innerHTML = `💡 <em>${MOTIVATIONAL_QUOTES[randomIndex]}</em>`;
+    }
+};
+
+// ----------------------------------------------------
+// SAF JAVASCRIPT KONFETİ MOTORU (PERFORMANS DOSTU)
+// ----------------------------------------------------
+function triggerConfetti() {
+    const canvas = document.getElementById('confetti-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Pencere boyutu değiştiğinde canvası güncelle
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }, { once: true });
+    
+    const colors = ['#f87171', '#60a5fa', '#34d399', '#fb923c', '#c084fc', '#f472b6', '#fbbf24'];
+    const particles = [];
+    
+    // 100 partikül oluştur
+    for (let i = 0; i < 120; i++) {
+        particles.push({
+            x: canvas.width / 2,
+            y: canvas.height + 20,
+            r: Math.random() * 6 + 4,
+            d: Math.random() * canvas.height,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            tilt: Math.random() * 10 - 5,
+            tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+            tiltAngle: 0,
+            // Hız ve fırlatma yönü
+            vx: Math.random() * 20 - 10,
+            vy: -Math.random() * 15 - 10,
+            gravity: 0.3
+        });
+    }
+    
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let activeParticles = false;
+        
+        particles.forEach(p => {
+            p.tiltAngle += p.tiltAngleIncremental;
+            p.y += p.vy;
+            p.x += p.vx;
+            p.vy += p.gravity;
+            p.tilt = Math.sin(p.tiltAngle) * 12;
+            
+            // Eğer ekrandaysa çiz
+            if (p.y <= canvas.height) {
+                activeParticles = true;
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                ctx.stroke();
+            }
+        });
+        
+        if (activeParticles) {
+            requestAnimationFrame(draw);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+    
+    draw();
 }
 
