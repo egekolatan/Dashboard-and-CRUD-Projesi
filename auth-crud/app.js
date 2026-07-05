@@ -13,46 +13,77 @@ const STORAGE_KEYS = {
     PRODUCTS: 'auth_crud_products'           // Eklenmiş olan tüm ürünlerin tutulacağı liste
 };
 
+// API Konfigürasyonu ve İstek Yardımcısı
+const API_BASE = window.location.origin.includes('3000') ? '' : 'http://localhost:3000';
+
+async function apiFetch(endpoint, options = {}) {
+    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API error: ${response.status}`);
+    }
+    return response.json();
+}
+
 // Uygulama Durum Yönetimi (State)
 let appState = {
     users: JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || [],
-    currentUser: JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER)) || null,
-    products: [] // DOMContentLoaded aşamasında initProducts() ile doldurulacak
+    currentUser: JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER)) || JSON.parse(sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER)) || null
 };
+
+// Şifre Hashleme Yardımcı Fonksiyonu (SHA-256)
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // Varsayılan Yönetici Bilgileri Kontrolü ve Ekleme
 const defaultAdmin = {
     name: 'Ege Kolatan',
     email: 'egekolatan114@gmail.com',
-    password: 'Ege352008'
+    password: 'Ege352008',
+    avatar: 'E'
 };
 
-if (!appState.users.some(u => u.email === defaultAdmin.email)) {
-    appState.users.push(defaultAdmin);
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
-}
-
-// Ürünleri Güvenli Yükleme Fonksiyonu
-function initProducts() {
-    try {
-        const rawData = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-        appState.products = rawData ? JSON.parse(rawData) : [];
-    } catch (e) {
-        console.error("Ürün verileri okunurken hata oluştu, sıfırlanıyor...", e);
-        appState.products = [];
+async function initDefaultAdmin() {
+    const hashedPass = await hashPassword(defaultAdmin.password);
+    const adminIndex = appState.users.findIndex(u => u.email === defaultAdmin.email);
+    
+    if (adminIndex === -1) {
+        const adminCopy = { ...defaultAdmin, password: hashedPass };
+        appState.users.push(adminCopy);
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
+    } else if (appState.users[adminIndex].password.length < 64) {
+        // Eğer mevcut şifre hashlenmemişse güncelle
+        appState.users[adminIndex].password = hashedPass;
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
     }
 }
 
 // ----------------------------------------------------
 // SAYFA YÜKLENDİĞİNDE BAŞLATILACAK FONKSİYONLAR
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
-    initProducts();
+document.addEventListener('DOMContentLoaded', async () => {
+    await initDefaultAdmin();
     checkAuthStatus();
     setupAuthEvents();
     setupPasswordToggle();
-    setupCrudEvents();
-    setupDataActions();
+    setupResetPasswordEvents();
 });
 
 // ----------------------------------------------------
@@ -61,19 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Giriş durumunu kontrol eden ve ekranları açıp/kapatan fonksiyon
 function checkAuthStatus() {
-    const authSection = document.getElementById('auth-section');
-    const appSection = document.getElementById('app-section');
-    
     if (appState.currentUser) {
-        // Eğer kullanıcı giriş yapmışsa: Formu gizle, ana ekranı göster
-        authSection.classList.add('hidden');
-        appSection.classList.remove('hidden');
-        document.getElementById('user-display-name').textContent = appState.currentUser.name;
-        renderProducts(); // Ürün tablosunu ekrana çiz
-    } else {
-        // Giriş yapılmamışsa: Giriş formunu göster, ana ekranı gizle
-        authSection.classList.remove('hidden');
-        appSection.classList.add('hidden');
+        // Eğer kullanıcı giriş yapmışsa doğrudan dashboard'a yönlendir
+        window.location.href = '../dashboard/';
     }
 }
 
@@ -105,7 +126,7 @@ function setupAuthEvents() {
 
     // Kayıt Formu Gönderme (Submit) İşlemi
     if (registerForm) {
-        registerForm.addEventListener('submit', (e) => {
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const name = document.getElementById('register-name').value.trim();
@@ -118,65 +139,126 @@ function setupAuthEvents() {
                 return;
             }
             
-            // Kullanıcı zaten kayıtlı mı kontrolü
-            const userExists = appState.users.some(u => u.email === email);
-            if (userExists) {
-                showAuthAlert('Bu e-posta adresi zaten kayıtlı!', 'error');
+            // Şifre gücü validasyonu (en az 6 karakter, harf ve rakam içermeli)
+            const hasLetter = /[a-zA-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            if (password.length < 6 || !hasLetter || !hasNumber) {
+                showAuthAlert('Şifreniz en az 6 karakter uzunluğunda olmalı, en az bir harf ve bir rakam içermelidir!', 'error');
                 return;
             }
             
-            // Yeni kullanıcıyı ekle
-            const newUser = { name, email, password };
-            appState.users.push(newUser);
-            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
-            
-            showAuthAlert('Kayıt başarıyla tamamlandı! Giriş yapabilirsiniz.', 'success');
-            registerForm.reset();
-            
-            // Giriş sekmesine otomatik geçiş yap
-            setTimeout(() => {
-                tabLogin.click();
-            }, 1500);
+            // API Üzerinden Kayıt Denemesi
+            try {
+                const res = await apiFetch('/api/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, password })
+                });
+                showAuthAlert(res.message || 'Kayıt başarıyla tamamlandı!', 'success');
+                registerForm.reset();
+                setTimeout(() => {
+                    tabLogin.click();
+                }, 1500);
+            } catch (err) {
+                console.warn("Sunucu çevrimdışı, yerel veritabanı (localStorage) kullanılıyor:", err);
+                
+                // Kullanıcı zaten kayıtlı mı kontrolü
+                const userExists = appState.users.some(u => u.email === email);
+                if (userExists) {
+                    showAuthAlert('Bu e-posta adresi zaten kayıtlı!', 'error');
+                    return;
+                }
+                
+                // Yeni kullanıcıyı şifresini hashleyerek ekle
+                const hashedPassword = await hashPassword(password);
+                const newUser = { name, email, password: hashedPassword, avatar: name.charAt(0).toUpperCase() };
+                appState.users.push(newUser);
+                localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
+                
+                showAuthAlert('Kayıt başarıyla tamamlandı (Çevrimdışı)! Giriş yapabilirsiniz.', 'success');
+                registerForm.reset();
+                setTimeout(() => {
+                    tabLogin.click();
+                }, 1500);
+            }
         });
     }
     
     // Giriş Formu Gönderme (Submit) İşlemi
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const email = document.getElementById('login-email').value.trim().toLowerCase();
         const password = document.getElementById('login-password').value;
+        const rememberMe = document.getElementById('login-remember').checked;
         
-        // Kayıtlı kullanıcı listesinde eşleşme ara
-        const user = appState.users.find(u => u.email === email && u.password === password);
-        
-        if (user) {
-            // Başarılı giriş: Aktif kullanıcıyı ayarla ve kaydet
-            appState.currentUser = { name: user.name, email: user.email };
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(appState.currentUser));
+        // API Üzerinden Giriş Denemesi
+        try {
+            const data = await apiFetch('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
             
-            // Dashboard'da görüntülenecek kullanıcı adı ve avatar simgesini ayarla
-            localStorage.setItem('novadash_username', user.name);
-            localStorage.setItem('novadash_avatar', user.name.charAt(0).toUpperCase());
+            // Oturumu ve Token'ı Kaydet
+            appState.currentUser = data.user;
+            if (rememberMe) {
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(appState.currentUser));
+                sessionStorage.removeItem('auth_token');
+                sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            } else {
+                sessionStorage.setItem('auth_token', data.token);
+                sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(appState.currentUser));
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            }
+            
+            // Dashboard Ayarları
+            localStorage.setItem('novadash_username', data.user.name);
+            localStorage.setItem('novadash_avatar', data.user.avatar);
+            localStorage.setItem(data.user.email + '_novadash_username', data.user.name);
+            localStorage.setItem(data.user.email + '_novadash_avatar', data.user.avatar);
             
             showAuthAlert('Giriş başarılı! Dashboard sayfasına yönlendiriliyorsunuz...', 'success');
             loginForm.reset();
-            
-            // 1.5 saniye sonra dashboard sayfasına yönlendir
             setTimeout(() => {
                 window.location.href = '../dashboard/';
             }, 1500);
-        } else {
-            // Hatalı giriş: Hata mesajı göster
-            showAuthAlert('E-posta veya şifre hatalı! Erişim engellendi.', 'error');
+        } catch (err) {
+            console.warn("Sunucu çevrimdışı, yerel veritabanı (localStorage) ile giriş deneniyor:", err);
+            
+            // Girilen şifreyi hashle
+            const hashedInputPass = await hashPassword(password);
+            
+            // Kayıtlı kullanıcı listesinde eşleşme ara
+            const user = appState.users.find(u => u.email === email && u.password === hashedInputPass);
+            
+            if (user) {
+                // Başarılı giriş: Aktif kullanıcıyı ayarla ve kaydet
+                appState.currentUser = { name: user.name, email: user.email, avatar: user.avatar || user.name.charAt(0).toUpperCase() };
+                
+                if (rememberMe) {
+                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(appState.currentUser));
+                    sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                } else {
+                    sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(appState.currentUser));
+                    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                }
+                
+                // Dashboard'da görüntülenecek kullanıcı adı ve avatar simgesini ayarla
+                localStorage.setItem('novadash_username', user.name);
+                localStorage.setItem('novadash_avatar', user.avatar || user.name.charAt(0).toUpperCase());
+                localStorage.setItem(user.email + '_novadash_username', user.name);
+                localStorage.setItem(user.email + '_novadash_avatar', user.avatar || user.name.charAt(0).toUpperCase());
+                
+                showAuthAlert('Giriş başarılı (Çevrimdışı)! Yönlendiriliyorsunuz...', 'success');
+                loginForm.reset();
+                setTimeout(() => {
+                    window.location.href = '../dashboard/';
+                }, 1500);
+            } else {
+                showAuthAlert('E-posta veya şifre hatalı! Erişim engellendi.', 'error');
+            }
         }
-    });
-    
-    // Çıkış Yapma İşlemi
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        appState.currentUser = null;
-        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-        checkAuthStatus();
     });
 }
 
@@ -236,239 +318,83 @@ function setupPasswordToggle() {
 }
 
 // ----------------------------------------------------
-// CRUD (ÜRETİM & ENVANTER YÖNETİMİ) MANTIĞI
+// ŞİFRE SIFIRLAMA (RESET PASSWORD) MANTIĞI
 // ----------------------------------------------------
-function setupCrudEvents() {
-    const productForm = document.getElementById('product-form');
-    const searchInput = document.getElementById('search-input');
-    const filterCategory = document.getElementById('filter-category');
-    
-    // Yeni Ürün Ekleme (Create)
-    productForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const name = document.getElementById('prod-name').value.trim();
-        const category = document.getElementById('prod-category').value;
-        const price = parseFloat(document.getElementById('prod-price').value);
-        const stock = parseInt(document.getElementById('prod-stock').value);
-        
-        const newProduct = {
-            id: Date.now().toString(), // Benzersiz ID üretme
-            name,
-            category,
-            price,
-            stock,
-            createdBy: appState.currentUser.name, // Ürünü ekleyen kullanıcı bilgisi
-            creatorEmail: appState.currentUser.email
-        };
-        
-        appState.products.push(newProduct);
-        saveProducts();
-        renderProducts();
-        
-        productForm.reset();
-    });
-    
-    // Arama Kutusuna Göre Canlı Filtreleme
-    searchInput.addEventListener('input', renderProducts);
-    
-    // Kategoriye Göre Canlı Filtreleme
-    filterCategory.addEventListener('change', renderProducts);
-    
-    // Modal Düzenleme Formu Gönderme (Update)
-    const editProductForm = document.getElementById('edit-product-form');
-    editProductForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const id = document.getElementById('edit-prod-id').value;
-        const name = document.getElementById('edit-prod-name').value.trim();
-        const category = document.getElementById('edit-prod-category').value;
-        const price = parseFloat(document.getElementById('edit-prod-price').value);
-        const stock = parseInt(document.getElementById('edit-prod-stock').value);
-        
-        // Ürünü listede bulup güncelleme
-        appState.products = appState.products.map(prod => {
-            if (prod.id === id) {
-                return { ...prod, name, category, price, stock };
-            }
-            return prod;
+function setupResetPasswordEvents() {
+    const forgotLink = document.getElementById('forgot-password-link');
+    const resetModal = document.getElementById('reset-modal');
+    const closeResetBtn = document.getElementById('close-reset-btn');
+    const cancelResetBtn = document.getElementById('cancel-reset-btn');
+    const resetForm = document.getElementById('reset-password-form');
+    const resetAlert = document.getElementById('reset-alert');
+
+    if (forgotLink && resetModal) {
+        forgotLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetModal.style.display = 'flex';
+            resetAlert.textContent = '';
+            resetAlert.className = 'alert-message';
         });
-        
-        saveProducts();
-        renderProducts();
-        closeModal();
-    });
-    
-    // Modal Kapatma Düğmeleri
-    document.getElementById('close-modal-btn').addEventListener('click', closeModal);
-    document.getElementById('cancel-modal-btn').addEventListener('click', closeModal);
-}
-
-// Ürünleri localStorage'a Kaydetme
-function saveProducts() {
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(appState.products));
-}
-
-// Ürünleri Listeleme / Tabloyu Güncelleme (Read)
-function renderProducts() {
-    const tableBody = document.getElementById('product-table-body');
-    const searchQuery = document.getElementById('search-input').value.toLowerCase();
-    const categoryFilter = document.getElementById('filter-category').value;
-    
-    tableBody.innerHTML = '';
-    
-    // Arama kriterine ve kategoriye göre filtreleme
-    const filteredProducts = appState.products.filter(prod => {
-        const matchesSearch = prod.name.toLowerCase().includes(searchQuery);
-        const matchesCategory = categoryFilter === 'Hepsi' || prod.category === categoryFilter;
-        return matchesSearch && matchesCategory;
-    });
-    
-    // Envanter boşsa bildirim satırı bas
-    if (filteredProducts.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty-row-msg">Gösterilecek ürün kaydı bulunmuyor.</td>
-            </tr>
-        `;
-        return;
     }
-    
-    // Tablo satırlarını oluşturma
-    filteredProducts.forEach(prod => {
-        const tr = document.createElement('tr');
-        
-        // Çöp kutusu ve kalem simgeleri için basit butonlar
-        // Ürünü yalnızca ekleyen kişi düzenleyebilir/silebilir
-        const isOwner = prod.creatorEmail === appState.currentUser.email;
-        
-        tr.innerHTML = `
-            <td><strong>${escapeHtml(prod.name)}</strong></td>
-            <td>${escapeHtml(prod.category)}</td>
-            <td>₺${prod.price.toFixed(2)}</td>
-            <td>${prod.stock} adet</td>
-            <td><span class="text-muted">${escapeHtml(prod.createdBy)}</span></td>
-            <td>
-                <div class="table-actions">
-                    ${isOwner ? `
-                        <button class="btn-icon" onclick="openEditModal('${prod.id}')" title="Düzenle">✏️</button>
-                        <button class="btn-icon" onclick="deleteProduct('${prod.id}')" title="Sil">🗑️</button>
-                    ` : '<span class="text-muted" style="font-size:0.8rem">Kısıtlı</span>'}
-                </div>
-            </td>
-        `;
-        tableBody.appendChild(tr);
-    });
-}
 
-// Güvenli HTML Temizliği (XSS Koruması)
-function escapeHtml(unsafe) {
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-}
+    const hideResetModal = () => {
+        resetModal.style.display = 'none';
+        resetForm.reset();
+    };
 
-// Ürün Silme Fonksiyonu (Delete)
-window.deleteProduct = function(id) {
-    const product = appState.products.find(p => p.id === id);
-    if (!product) return;
-    
-    // Güvenlik amaçlı onay kutusu
-    if (confirm(`"${product.name}" isimli ürünü silmek istediğinizden emin misiniz?`)) {
-        appState.products = appState.products.filter(p => p.id !== id);
-        saveProducts();
-        renderProducts();
-    }
-};
+    if (closeResetBtn) closeResetBtn.addEventListener('click', hideResetModal);
+    if (cancelResetBtn) cancelResetBtn.addEventListener('click', hideResetModal);
 
-// Düzenleme Modalini Açma ve Verileri Doldurma (Update Aşaması 1)
-window.openEditModal = function(id) {
-    const product = appState.products.find(p => p.id === id);
-    if (!product) return;
-    
-    document.getElementById('edit-prod-id').value = product.id;
-    document.getElementById('edit-prod-name').value = product.name;
-    document.getElementById('edit-prod-category').value = product.category;
-    document.getElementById('edit-prod-price').value = product.price;
-    document.getElementById('edit-prod-stock').value = product.stock;
-    
-    document.getElementById('edit-modal').classList.add('active');
-};
+    if (resetForm) {
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reset-name').value.trim();
+            const email = document.getElementById('reset-email').value.trim().toLowerCase();
+            const newPassword = document.getElementById('reset-new-password').value;
 
-// Modali Kapatma
-function closeModal() {
-    document.getElementById('edit-modal').classList.remove('active');
-    document.getElementById('edit-product-form').reset();
-}
-
-// ----------------------------------------------------
-// VERİ ÇEKME / DIŞA AKTAR - İÇE AKTAR (EXPORT/IMPORT) MANTIĞI
-// ----------------------------------------------------
-function setupDataActions() {
-    const exportBtn = document.getElementById('export-json-btn');
-    const importFile = document.getElementById('import-file');
-    
-    // Verileri JSON Olarak Dışa Aktar (Download)
-    exportBtn.addEventListener('click', () => {
-        if (appState.products.length === 0) {
-            alert('Dışa aktarılacak hiç ürün verisi yok!');
-            return;
-        }
-        
-        // JSON dizesini biçimlendirerek oluştur
-        const dataStr = JSON.stringify(appState.products, null, 2);
-        
-        // İndirme işlemini tetiklemek için sanal bir indirme bağlantısı (link) kur
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        
-        a.href = url;
-        a.download = `stok_envanteri_${Date.now()}.json`; // Dosya adı şablonu
-        document.body.appendChild(a);
-        a.click();
-        
-        // Temizlik işlemleri
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
-    
-    // JSON Dosyası Yükleme (İçe Aktar)
-    importFile.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            try {
-                const importedData = JSON.parse(evt.target.result);
-                
-                // Gelen verinin basit bir şema kontrolü
-                if (Array.isArray(importedData)) {
-                    // Mevcut ürün listesiyle birleştirme veya tamamen üzerine yazma seçeneği
-                    if (confirm('İçe aktarılan ürünleri mevcut listenizin üzerine yazmak ister misiniz? (Hayır derseniz listenin sonuna eklenir)')) {
-                        appState.products = importedData;
-                    } else {
-                        appState.products = [...appState.products, ...importedData];
-                    }
-                    
-                    saveProducts();
-                    renderProducts();
-                    alert('Veriler başarıyla içe aktarıldı!');
-                } else {
-                    alert('Geçersiz dosya formatı! JSON verisi bir dizi (array) olmalıdır.');
-                }
-            } catch (err) {
-                alert('Dosya okunurken bir hata oluştu: ' + err.message);
+            // Şifre gücü validasyonu (en az 6 karakter, harf ve rakam içermeli)
+            const hasLetter = /[a-zA-Z]/.test(newPassword);
+            const hasNumber = /[0-9]/.test(newPassword);
+            if (newPassword.length < 6 || !hasLetter || !hasNumber) {
+                resetAlert.textContent = 'Şifreniz en az 6 karakter uzunluğunda olmalı, en az bir harf ve bir rakam içermelidir!';
+                resetAlert.className = 'alert-message error';
+                return;
             }
-            
-            // Aynı dosyayı tekrar yükleyebilmek için input alanını sıfırla
-            importFile.value = '';
-        };
-        
-        reader.readAsText(file);
-    });
+
+            try {
+                // API Şifre Sıfırlama
+                const res = await apiFetch('/api/auth/reset-password', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, newPassword })
+                });
+                resetAlert.textContent = res.message || 'Şifre başarıyla güncellendi!';
+                resetAlert.className = 'alert-message success';
+                setTimeout(hideResetModal, 1500);
+            } catch (err) {
+                console.warn("Sunucu çevrimdışı, yerel sıfırlama deneniyor:", err);
+                
+                // LocalStorage Fallback
+                const userIndex = appState.users.findIndex(u => u.email === email);
+                if (userIndex === -1) {
+                    resetAlert.textContent = 'E-posta adresi sistemde kayıtlı değil!';
+                    resetAlert.className = 'alert-message error';
+                    return;
+                }
+                
+                if (appState.users[userIndex].name.toLowerCase() !== name.toLowerCase()) {
+                    resetAlert.textContent = 'Girdiğiniz ad soyad bilgisi kayıtlı kullanıcıyla eşleşmiyor!';
+                    resetAlert.className = 'alert-message error';
+                    return;
+                }
+
+                const hashedPassword = await hashPassword(newPassword);
+                appState.users[userIndex].password = hashedPassword;
+                localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
+                
+                resetAlert.textContent = 'Şifre başarıyla güncellendi (Çevrimdışı)!';
+                resetAlert.className = 'alert-message success';
+                setTimeout(hideResetModal, 1500);
+            }
+        });
+    }
 }

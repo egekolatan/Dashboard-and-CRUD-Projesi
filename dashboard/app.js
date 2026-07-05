@@ -1,5 +1,5 @@
 // Giriş Doğrulama Kontrolü (Güvenlik Kapısı)
-const loggedInUser = JSON.parse(localStorage.getItem('auth_crud_current_user'));
+const loggedInUser = JSON.parse(localStorage.getItem('auth_crud_current_user')) || JSON.parse(sessionStorage.getItem('auth_crud_current_user'));
 if (!loggedInUser) {
     // Giriş yapılmadıysa doğrudan giriş sayfasına yönlendir
     window.location.href = '../auth-crud/';
@@ -25,6 +25,31 @@ const KEYS = {
     NOTE_SIZE: userPrefix + 'novadash_note_size'
 };Location = window.location;
 
+// API Konfigürasyonu ve İstek Yardımcısı
+const API_BASE = window.location.origin.includes('3000') ? '' : 'http://localhost:3000';
+
+async function apiFetch(endpoint, options = {}) {
+    const token = localStorage.getItem('auth_token');
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API error: ${response.status}`);
+    }
+    return response.json();
+}
+
 // State Object
 let state = {
     theme: localStorage.getItem(KEYS.THEME) || 'dark',
@@ -35,13 +60,59 @@ let state = {
     notes: JSON.parse(localStorage.getItem(KEYS.NOTES)) || [],
     quickNote: localStorage.getItem(KEYS.QUICK_NOTE) || '',
     activeNoteId: localStorage.getItem(KEYS.ACTIVE_NOTE_ID) || null,
-    avatar: localStorage.getItem(KEYS.AVATAR) || (loggedInUser && loggedInUser.name ? loggedInUser.name.charAt(0).toUpperCase() : 'E'),
+    avatar: localStorage.getItem(KEYS.AVATAR) || (loggedInUser && loggedInUser.avatar ? loggedInUser.avatar : (loggedInUser && loggedInUser.name ? loggedInUser.name.charAt(0).toUpperCase() : 'E')),
     notifications: JSON.parse(localStorage.getItem(KEYS.NOTIFICATIONS)) || [],
     city: localStorage.getItem(KEYS.CITY) || 'İzmir',
     noteBg: localStorage.getItem(userPrefix + 'novadash_note_bg') || '',
     noteSize: localStorage.getItem(userPrefix + 'novadash_note_size') || '15px'
 };
 
+// Backend veri senkronizasyonu
+async function syncBackend() {
+    try {
+        await apiFetch('/api/dashboard/data', {
+            method: 'POST',
+            body: JSON.stringify({
+                tasks: state.tasks,
+                transactions: state.transactions,
+                notes: state.notes,
+                quickNote: state.quickNote,
+                city: state.city,
+                theme: state.theme,
+                accent: state.accent
+            })
+        });
+    } catch (e) {
+        console.warn("Backend veri senkronizasyonu başarısız (çevrimdışı mod):", e);
+    }
+}
+
+// İlk yüklemede backend'den verileri getir
+async function loadInitialState() {
+    try {
+        const data = await apiFetch('/api/dashboard/data');
+        if (data) {
+            if (data.theme) state.theme = data.theme;
+            if (data.accent) state.accent = data.accent;
+            if (data.tasks) state.tasks = data.tasks;
+            if (data.transactions) state.transactions = data.transactions;
+            if (data.notes) state.notes = data.notes;
+            if (data.quickNote !== undefined) state.quickNote = data.quickNote;
+            if (data.city) state.city = data.city;
+            
+            // LocalStorage'ı da güncelle (Yedekleme ve UI uyumluluğu için)
+            localStorage.setItem(KEYS.THEME, state.theme);
+            localStorage.setItem(KEYS.ACCENT, state.accent);
+            localStorage.setItem(KEYS.TASKS, JSON.stringify(state.tasks));
+            localStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(state.transactions));
+            localStorage.setItem(KEYS.NOTES, JSON.stringify(state.notes));
+            localStorage.setItem(KEYS.QUICK_NOTE, state.quickNote);
+            localStorage.setItem(KEYS.CITY, state.city);
+        }
+    } catch (e) {
+        console.warn("Backend'den veri yükleme başarısız (yerel yedek kullanılıyor):", e);
+    }
+}
 
 // Simulated Real-Time System Data
 const systemHistory = {
@@ -57,12 +128,14 @@ let financePieChartInstance = null;
 // Save helper
 function saveState(key, value) {
     localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    syncBackend(); // Arka planda sunucuyla eşitle
 }
 
 // ----------------------------------------------------
 // INITIALIZATION
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadInitialState();
     initTheme();
     initAccentColor();
     initNavigation();
@@ -73,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTasksPanel();
     initFinancePanel();
     initNotesPanel();
+    initProductsPanel();
     initSettingsPanel();
     initWelcomeBanner();
     updateWeather();
@@ -1161,6 +1235,26 @@ function initSettingsPanel() {
                 }
             }
         }
+
+        // Veritabanını (auth_crud_users) ve aktif oturumu (auth_crud_current_user) güncelle
+        if (loggedInUser && loggedInUser.email) {
+            const allUsers = JSON.parse(localStorage.getItem('auth_crud_users')) || [];
+            const userIndex = allUsers.findIndex(u => u.email === loggedInUser.email);
+            if (userIndex !== -1) {
+                allUsers[userIndex].name = state.username;
+                allUsers[userIndex].avatar = state.avatar;
+                localStorage.setItem('auth_crud_users', JSON.stringify(allUsers));
+            }
+            
+            loggedInUser.name = state.username;
+            loggedInUser.avatar = state.avatar;
+            
+            if (localStorage.getItem('auth_crud_current_user')) {
+                localStorage.setItem('auth_crud_current_user', JSON.stringify(loggedInUser));
+            } else {
+                sessionStorage.setItem('auth_crud_current_user', JSON.stringify(loggedInUser));
+            }
+        }
         
         updateUsernameUI();
         if (typeof initWelcomeBanner === 'function') initWelcomeBanner();
@@ -1182,6 +1276,9 @@ function initSettingsPanel() {
             // Sadece bu kullanıcıya ait verileri temizle
             Object.values(KEYS).forEach(key => localStorage.removeItem(key));
             localStorage.removeItem('auth_crud_current_user');
+            localStorage.removeItem('auth_token');
+            sessionStorage.removeItem('auth_crud_current_user');
+            sessionStorage.removeItem('auth_token');
             
             // Reset local state
             state = {
@@ -1217,14 +1314,15 @@ function updateUsernameUI() {
         }
     }
     
-    // Profil alanına tıklanınca çıkış yapma özelliği ekle
-    const profile = document.querySelector('.user-profile');
-    if (profile) {
-        profile.style.cursor = 'pointer';
-        profile.title = 'Çıkış yapmak için tıklayın';
-        profile.onclick = () => {
-            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+    // Çıkış yap butonuna tıklanınca güvenli çıkış yapma özelliği
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.onclick = () => {
+            if (confirm('⚠️ UYARI: Hesabınızdan çıkış yapmak istediğinizden emin misiniz?')) {
                 localStorage.removeItem('auth_crud_current_user');
+                localStorage.removeItem('auth_token');
+                sessionStorage.removeItem('auth_crud_current_user');
+                sessionStorage.removeItem('auth_token');
                 window.location.href = '../auth-crud/';
             }
         };
@@ -1804,4 +1902,251 @@ async function updateWeather() {
         cityEl.textContent = 'Bağlantı Hatası';
     }
 }
+
+// ----------------------------------------------------
+// ENVANTER (PRODUCT CRUD) MANTIĞI
+// ----------------------------------------------------
+let productsList = [];
+
+async function initProductsPanel() {
+    const productForm = document.getElementById('product-form');
+    const searchInput = document.getElementById('search-input');
+    const filterCategory = document.getElementById('filter-category');
+    
+    // Load products from API or local storage
+    async function loadProducts() {
+        try {
+            productsList = await apiFetch('/api/products');
+        } catch (e) {
+            console.warn("Backend products fetch failed, using local fallback:", e);
+            productsList = JSON.parse(localStorage.getItem('auth_crud_products')) || [];
+        }
+        renderProducts();
+    }
+    
+    function saveProducts() {
+        localStorage.setItem('auth_crud_products', JSON.stringify(productsList));
+    }
+    
+    function renderProducts() {
+        const tableBody = document.getElementById('product-table-body');
+        const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+        const categoryFilter = filterCategory ? filterCategory.value : 'Hepsi';
+        
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+        
+        const filteredProducts = productsList.filter(prod => {
+            const matchesSearch = prod.name.toLowerCase().includes(searchQuery);
+            const matchesCategory = categoryFilter === 'Hepsi' || prod.category === categoryFilter;
+            return matchesSearch && matchesCategory;
+        });
+        
+        if (filteredProducts.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Gösterilecek ürün kaydı bulunmuyor.</td>
+                </tr>
+            `;
+            return;
+        }
+        
+        filteredProducts.forEach(prod => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border-color)';
+            tr.style.fontSize = '0.9rem';
+            
+            const isOwner = prod.creatorEmail === loggedInUser.email;
+            
+            tr.innerHTML = `
+                <td style="padding: 0.75rem 1rem;"><strong>${escapeHtml(prod.name)}</strong></td>
+                <td style="padding: 0.75rem 1rem;">${escapeHtml(prod.category)}</td>
+                <td style="padding: 0.75rem 1rem;">₺${prod.price.toFixed(2)}</td>
+                <td style="padding: 0.75rem 1rem;">${prod.stock} adet</td>
+                <td style="padding: 0.75rem 1rem;"><span style="color: var(--text-muted); font-size: 0.8rem;">${escapeHtml(prod.createdBy)}</span></td>
+                <td style="padding: 0.75rem 1rem; text-align: right;">
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        ${isOwner ? `
+                            <button class="btn-icon" onclick="openEditProductModal('${prod.id}')" title="Düzenle" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.25)'" onmouseout="this.style.transform='scale(1)'">✏️</button>
+                            <button class="btn-icon" onclick="deleteProductItem('${prod.id}')" title="Sil" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.25)'" onmouseout="this.style.transform='scale(1)'">🗑️</button>
+                        ` : '<span style="color: var(--text-muted); font-size:0.8rem">Kısıtlı</span>'}
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+    
+    function escapeHtml(unsafe) {
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+    
+    // Add product
+    if (productForm) {
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('prod-name').value.trim();
+            const category = document.getElementById('prod-category').value;
+            const price = parseFloat(document.getElementById('prod-price').value);
+            const stock = parseInt(document.getElementById('prod-stock').value);
+            
+            try {
+                const newProduct = await apiFetch('/api/products', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, category, price, stock })
+                });
+                productsList.push(newProduct);
+                renderProducts();
+            } catch (err) {
+                console.warn("Backend add failed, using local offline fallback:", err);
+                const localProd = {
+                    id: Date.now().toString(),
+                    name,
+                    category,
+                    price,
+                    stock,
+                    createdBy: loggedInUser.name,
+                    creatorEmail: loggedInUser.email
+                };
+                productsList.push(localProd);
+                saveProducts();
+                renderProducts();
+            }
+            productForm.reset();
+            addNotification("Yeni ürün envantere eklendi.");
+        });
+    }
+    
+    if (searchInput) searchInput.addEventListener('input', renderProducts);
+    if (filterCategory) filterCategory.addEventListener('change', renderProducts);
+    
+    // Edit product submit
+    const editForm = document.getElementById('edit-product-form');
+    if (editForm) {
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-prod-id').value;
+            const name = document.getElementById('edit-prod-name').value.trim();
+            const category = document.getElementById('edit-prod-category').value;
+            const price = parseFloat(document.getElementById('edit-prod-price').value);
+            const stock = parseInt(document.getElementById('edit-prod-stock').value);
+            
+            try {
+                const updated = await apiFetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ name, category, price, stock })
+                });
+                productsList = productsList.map(p => p.id === id ? updated : p);
+                renderProducts();
+            } catch (err) {
+                console.warn("Backend update failed, using local fallback:", err);
+                productsList = productsList.map(p => p.id === id ? { ...p, name, category, price, stock } : p);
+                saveProducts();
+                renderProducts();
+            }
+            closeProductModal();
+            addNotification("Ürün bilgileri güncellendi.");
+        });
+    }
+    
+    // Modal close binds
+    const closeBtn = document.getElementById('close-prod-modal-btn');
+    const cancelBtn = document.getElementById('cancel-prod-modal-btn');
+    if (closeBtn) closeBtn.addEventListener('click', closeProductModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeProductModal);
+    
+    // Import/Export
+    const exportBtn = document.getElementById('export-json-btn');
+    const importFile = document.getElementById('import-file');
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            if (productsList.length === 0) {
+                alert('Dışa aktarılacak ürün yok!');
+                return;
+            }
+            const dataStr = JSON.stringify(productsList, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kolatan_envanter_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    }
+    
+    if (importFile) {
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    if (Array.isArray(imported)) {
+                        if (confirm('Mevcut ürünlerin üzerine yazmak ister misiniz?')) {
+                            productsList = imported;
+                        } else {
+                            productsList = [...productsList, ...imported];
+                        }
+                        saveProducts();
+                        renderProducts();
+                        alert('İçe aktarma başarılı!');
+                    }
+                } catch (err) {
+                    alert('Dosya okuma hatası: ' + err.message);
+                }
+                importFile.value = '';
+            };
+            reader.readAsText(file);
+        });
+    }
+    
+    // Start loading
+    await loadProducts();
+}
+
+window.openEditProductModal = function(id) {
+    const product = productsList.find(p => p.id === id);
+    if (!product) return;
+    
+    document.getElementById('edit-prod-id').value = product.id;
+    document.getElementById('edit-prod-name').value = product.name;
+    document.getElementById('edit-prod-category').value = product.category;
+    document.getElementById('edit-prod-price').value = product.price;
+    document.getElementById('edit-prod-stock').value = product.stock;
+    
+    document.getElementById('edit-product-modal').style.display = 'flex';
+};
+
+window.closeProductModal = function() {
+    document.getElementById('edit-product-modal').style.display = 'none';
+};
+
+window.deleteProductItem = async function(id) {
+    const product = productsList.find(p => p.id === id);
+    if (!product) return;
+    
+    if (confirm(`"${product.name}" ürününü envanterden silmek istediğinize emin misiniz?`)) {
+        try {
+            await apiFetch(`/api/products/${id}`, { method: 'DELETE' });
+            productsList = productsList.filter(p => p.id !== id);
+            renderProducts();
+        } catch (err) {
+            console.warn("Backend delete failed, using local fallback:", err);
+            productsList = productsList.filter(p => p.id !== id);
+            saveProducts();
+            renderProducts();
+        }
+        addNotification("Ürün envanterden silindi.");
+    }
+};
 

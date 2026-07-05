@@ -1,0 +1,10 @@
+# Node.js dependencies
+Backend/node_modules/
+node_modules/
+
+# Local database file
+Backend/db.json
+
+# OS files
+.DS_Store
+Thumbs.db
