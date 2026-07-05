@@ -1,10 +1,8 @@
-# Node.js dependencies
-Backend/node_modules/
-node_modules/
-
-# Local database file
-Backend/db.json
+# Backend folder (Keep local only)
+Backend/
 
 # OS files
 .DS_Store
 Thumbs.db
+node_modules/
+
