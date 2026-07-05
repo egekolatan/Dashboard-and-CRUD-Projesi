@@ -220,6 +220,43 @@ body {
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
+.password-wrapper {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 2.75rem !important;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    border-radius: var(--radius-sm);
+}
+
+.toggle-password-btn:hover {
+    color: var(--text-primary);
+}
+
+.toggle-password-btn:focus {
+    outline: none;
+    color: var(--accent-color);
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
