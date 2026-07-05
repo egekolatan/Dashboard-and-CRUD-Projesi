@@ -14,7 +14,9 @@ const KEYS = {
     TRANSACTIONS: 'novadash_transactions',
     NOTES: 'novadash_notes',
     QUICK_NOTE: 'novadash_quick_note',
-    ACTIVE_NOTE_ID: 'novadash_active_note_id'
+    ACTIVE_NOTE_ID: 'novadash_active_note_id',
+    AVATAR: 'novadash_avatar',
+    NOTIFICATIONS: 'novadash_notifications'
 };
 
 // State Object
@@ -26,7 +28,9 @@ let state = {
     transactions: JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS)) || [],
     notes: JSON.parse(localStorage.getItem(KEYS.NOTES)) || [],
     quickNote: localStorage.getItem(KEYS.QUICK_NOTE) || '',
-    activeNoteId: localStorage.getItem(KEYS.ACTIVE_NOTE_ID) || null
+    activeNoteId: localStorage.getItem(KEYS.ACTIVE_NOTE_ID) || null,
+    avatar: localStorage.getItem(KEYS.AVATAR) || 'E',
+    notifications: JSON.parse(localStorage.getItem(KEYS.NOTIFICATIONS)) || []
 };
 
 
@@ -60,6 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initFinancePanel();
     initNotesPanel();
     initSettingsPanel();
+    initWelcomeBanner();
+    initPomodoro();
+    initNotifications();
 });
 
 // ----------------------------------------------------
@@ -398,6 +405,8 @@ function initTasksPanel() {
         taskInput.value = '';
         renderTasks();
         updateOverviewStats();
+        addNotification(`Yeni görev eklendi: ${newTask.title}`);
+        if (typeof initWelcomeBanner === 'function') initWelcomeBanner();
     });
     
     filterBtns.forEach(btn => {
@@ -462,20 +471,28 @@ function renderTasks() {
 window.toggleTask = function(id) {
     state.tasks = state.tasks.map(task => {
         if (task.id === id) {
-            return { ...task, completed: !task.completed };
+            const nextCompleted = !task.completed;
+            addNotification(`Görev ${nextCompleted ? 'tamamlandı' : 'yapılacak olarak işaretlendi'}: ${task.title}`);
+            return { ...task, completed: nextCompleted };
         }
         return task;
     });
     saveState(KEYS.TASKS, state.tasks);
     renderTasks();
     updateOverviewStats();
+    if (typeof initWelcomeBanner === 'function') initWelcomeBanner();
 };
 
 window.deleteTask = function(id) {
+    const task = state.tasks.find(t => t.id === id);
+    if (task) {
+        addNotification(`Görev silindi: ${task.title}`);
+    }
     state.tasks = state.tasks.filter(task => task.id !== id);
     saveState(KEYS.TASKS, state.tasks);
     renderTasks();
     updateOverviewStats();
+    if (typeof initWelcomeBanner === 'function') initWelcomeBanner();
 };
 
 // ----------------------------------------------------
@@ -506,10 +523,12 @@ function initFinancePanel() {
         
         renderFinance();
         updateOverviewStats();
+        addNotification(`Finans işlemi eklendi: ${newTransaction.title} (₺${newTransaction.amount.toFixed(2)})`);
     });
     
     initFinancePieChart();
     renderFinance();
+    if (typeof updateFinanceTrendChart === 'function') updateFinanceTrendChart();
 }
 
 function initFinancePieChart() {
@@ -584,9 +603,17 @@ function renderFinance() {
         financePieChartInstance.options.plugins.legend.labels.color = state.theme === 'dark' ? '#9ca3af' : '#64748b';
         financePieChartInstance.update();
     }
+
+    if (typeof updateFinanceTrendChart === 'function') {
+        updateFinanceTrendChart();
+    }
 }
 
 window.deleteTransaction = function(id) {
+    const tx = state.transactions.find(t => t.id === id);
+    if (tx) {
+        addNotification(`Finans işlemi silindi: ${tx.title}`);
+    }
     state.transactions = state.transactions.filter(tx => tx.id !== id);
     saveState(KEYS.TRANSACTIONS, state.transactions);
     renderFinance();
@@ -756,6 +783,24 @@ function initSettingsPanel() {
     
     // Init name UI
     settingsUsername.value = state.username;
+    
+    // Highlight correct avatar in picker
+    const avatarPicker = document.getElementById('avatar-picker');
+    if (avatarPicker) {
+        const avatarOptions = avatarPicker.querySelectorAll('.avatar-option');
+        avatarOptions.forEach(opt => {
+            if (opt.dataset.char === state.avatar) {
+                opt.classList.add('active');
+            } else {
+                opt.classList.remove('active');
+            }
+            opt.addEventListener('click', () => {
+                avatarOptions.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+            });
+        });
+    }
+    
     updateUsernameUI();
     
     settingsForm.addEventListener('submit', (e) => {
@@ -764,7 +809,18 @@ function initSettingsPanel() {
         state.username = settingsUsername.value || 'Kullanıcı';
         saveState(KEYS.USERNAME, state.username);
         
+        // Save selected avatar
+        if (avatarPicker) {
+            const selectedAvatarOpt = avatarPicker.querySelector('.avatar-option.active');
+            if (selectedAvatarOpt) {
+                state.avatar = selectedAvatarOpt.dataset.char;
+                saveState(KEYS.AVATAR, state.avatar);
+            }
+        }
+        
         updateUsernameUI();
+        if (typeof initWelcomeBanner === 'function') initWelcomeBanner();
+        addNotification("Profil bilgileri başarıyla güncellendi.");
         
         // Show indicator / Save effect
         const submitBtn = settingsForm.querySelector('button[type="submit"]');
@@ -801,7 +857,11 @@ function initSettingsPanel() {
 
 function updateUsernameUI() {
     document.getElementById('display-username').textContent = state.username;
-    document.getElementById('user-avatar-initial').textContent = state.username.charAt(0).toUpperCase();
+    
+    const avatarEl = document.getElementById('user-avatar-initial');
+    if (avatarEl) {
+        avatarEl.textContent = state.avatar;
+    }
     
     // Profil alanına tıklanınca çıkış yapma özelliği ekle
     const profile = document.querySelector('.user-profile');
@@ -815,5 +875,323 @@ function updateUsernameUI() {
             }
         };
     }
+}
+
+// ----------------------------------------------------
+// BİLDİRİM MERKEZİ MANTIĞI
+// ----------------------------------------------------
+function addNotification(message) {
+    const notif = {
+        id: Date.now(),
+        message: message,
+        time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+    };
+    state.notifications.unshift(notif);
+    if (state.notifications.length > 20) {
+        state.notifications.pop();
+    }
+    saveState(KEYS.NOTIFICATIONS, state.notifications);
+    renderNotifications();
+}
+
+function renderNotifications() {
+    const listEl = document.getElementById('notif-list-container');
+    const badgeEl = document.getElementById('notif-badge-count');
+    if (!listEl || !badgeEl) return;
+    
+    const count = state.notifications.length;
+    if (count > 0) {
+        badgeEl.textContent = count;
+        badgeEl.classList.remove('hidden');
+    } else {
+        badgeEl.classList.add('hidden');
+    }
+    
+    if (state.notifications.length === 0) {
+        listEl.innerHTML = '<li class="empty-notif-msg">Yeni bildirim bulunmuyor.</li>';
+        return;
+    }
+    
+    listEl.innerHTML = state.notifications.map(n => `
+        <li class="notif-item">
+            <span>${n.message}</span>
+            <span class="notif-time">${n.time}</span>
+        </li>
+    `).join('');
+}
+
+function initNotifications() {
+    const trigger = document.getElementById('notif-trigger');
+    const dropdown = document.getElementById('notif-dropdown');
+    const clearBtn = document.getElementById('clear-notifs-btn');
+    
+    if (trigger && dropdown) {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        });
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && e.target !== trigger) {
+                dropdown.classList.remove('active');
+            }
+        });
+    }
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            state.notifications = [];
+            saveState(KEYS.NOTIFICATIONS, state.notifications);
+            renderNotifications();
+        });
+    }
+    renderNotifications();
+}
+
+// ----------------------------------------------------
+// AKILLI KARŞILAMA PANELİ MANTIĞI
+// ----------------------------------------------------
+function initWelcomeBanner() {
+    const greetingEl = document.getElementById('welcome-greeting-text');
+    const messageEl = document.getElementById('welcome-message-text');
+    if (!greetingEl || !messageEl) return;
+    
+    const hour = new Date().getHours();
+    let greeting = 'İyi Günler';
+    if (hour >= 5 && hour < 12) {
+        greeting = 'Günaydın';
+    } else if (hour >= 12 && hour < 18) {
+        greeting = 'İyi Günler';
+    } else if (hour >= 18 && hour < 23) {
+        greeting = 'İyi Akşamlar';
+    } else {
+        greeting = 'İyi Geceler';
+    }
+    
+    greetingEl.textContent = `${greeting}, ${state.username}!`;
+    
+    const pendingTasks = state.tasks.filter(t => !t.completed).length;
+    if (pendingTasks > 0) {
+        messageEl.textContent = `Bugün tamamlamanız gereken ${pendingTasks} aktif göreviniz bulunuyor. Kolay gelsin!`;
+    } else {
+        messageEl.textContent = `Harika! Bugün yapılması gereken hiç göreviniz kalmadı.`;
+    }
+}
+
+// ----------------------------------------------------
+// POMODORO SAYACI MANTIĞI
+// ----------------------------------------------------
+let pomodoroInterval = null;
+let pomodoroTimeLeft = 25 * 60;
+let pomodoroIsRunning = false;
+let pomodoroMode = 'work';
+
+function initPomodoro() {
+    const startBtn = document.getElementById('pomodoro-start');
+    const resetBtn = document.getElementById('pomodoro-reset');
+    const workBtn = document.getElementById('mode-work');
+    const breakBtn = document.getElementById('mode-break');
+    
+    if (!startBtn) return;
+    
+    startBtn.addEventListener('click', () => {
+        if (pomodoroIsRunning) {
+            clearInterval(pomodoroInterval);
+            pomodoroIsRunning = false;
+            startBtn.textContent = 'Başlat';
+            addNotification("Pomodoro zamanlayıcı duraklatıldı.");
+        } else {
+            pomodoroIsRunning = true;
+            startBtn.textContent = 'Duraklat';
+            addNotification("Pomodoro zamanlayıcı başlatıldı.");
+            
+            pomodoroInterval = setInterval(() => {
+                pomodoroTimeLeft--;
+                updatePomodoroDisplay();
+                
+                if (pomodoroTimeLeft <= 0) {
+                    clearInterval(pomodoroInterval);
+                    pomodoroIsRunning = false;
+                    startBtn.textContent = 'Başlat';
+                    
+                    playPomodoroSound();
+                    
+                    if (pomodoroMode === 'work') {
+                        addNotification("Tebrikler! Pomodoro seansı bitti. Mola zamanı!");
+                        alert("Pomodoro seansı bitti! Mola verin.");
+                        setPomodoroMode('break');
+                    } else {
+                        addNotification("Mola bitti! Çalışma seansına başlayabilirsiniz.");
+                        alert("Mola bitti! Çalışma zamanı.");
+                        setPomodoroMode('work');
+                    }
+                }
+            }, 1000);
+        }
+    });
+    
+    resetBtn.addEventListener('click', () => {
+        clearInterval(pomodoroInterval);
+        pomodoroIsRunning = false;
+        startBtn.textContent = 'Başlat';
+        pomodoroTimeLeft = pomodoroMode === 'work' ? 25 * 60 : 5 * 60;
+        updatePomodoroDisplay();
+        addNotification("Pomodoro zamanlayıcı sıfırlandı.");
+    });
+    
+    if (workBtn) workBtn.addEventListener('click', () => setPomodoroMode('work'));
+    if (breakBtn) breakBtn.addEventListener('click', () => setPomodoroMode('break'));
+    
+    updatePomodoroDisplay();
+}
+
+function setPomodoroMode(mode) {
+    const startBtn = document.getElementById('pomodoro-start');
+    const workBtn = document.getElementById('mode-work');
+    const breakBtn = document.getElementById('mode-break');
+    
+    pomodoroMode = mode;
+    clearInterval(pomodoroInterval);
+    pomodoroIsRunning = false;
+    if (startBtn) startBtn.textContent = 'Başlat';
+    
+    if (mode === 'work') {
+        pomodoroTimeLeft = 25 * 60;
+        if (workBtn) workBtn.classList.add('active');
+        if (breakBtn) breakBtn.classList.remove('active');
+    } else {
+        pomodoroTimeLeft = 5 * 60;
+        if (breakBtn) breakBtn.classList.add('active');
+        if (workBtn) workBtn.classList.remove('active');
+    }
+    updatePomodoroDisplay();
+}
+
+function updatePomodoroDisplay() {
+    const timeEl = document.getElementById('pomodoro-time');
+    const progressEl = document.getElementById('pomodoro-progress');
+    if (!timeEl || !progressEl) return;
+    
+    const mins = Math.floor(pomodoroTimeLeft / 60);
+    const secs = pomodoroTimeLeft % 60;
+    const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    timeEl.textContent = timeStr;
+    
+    document.title = pomodoroIsRunning ? `(${timeStr}) Gelişmiş Dashboard` : 'Gelişmiş Dashboard';
+    
+    const radius = 52;
+    const circumference = 2 * Math.PI * radius;
+    const totalDuration = pomodoroMode === 'work' ? 25 * 60 : 5 * 60;
+    const progress = (totalDuration - pomodoroTimeLeft) / totalDuration;
+    const offset = circumference - (progress * circumference);
+    
+    progressEl.style.strokeDasharray = `${circumference} ${circumference}`;
+    progressEl.style.strokeDashoffset = offset;
+}
+
+function playPomodoroSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.start();
+        setTimeout(() => {
+            oscillator.stop();
+            audioCtx.close();
+        }, 300);
+    } catch (err) {
+        console.error("Audio Context error:", err);
+    }
+}
+
+// ----------------------------------------------------
+// FİNANS TREND ÇİZGİ GRAFİK MANTIĞI
+// ----------------------------------------------------
+let financeTrendChartInstance = null;
+function updateFinanceTrendChart() {
+    const canvas = document.getElementById('financeTrendChart');
+    if (!canvas) return;
+    
+    const dailyData = {};
+    state.transactions.forEach(t => {
+        const dateStr = t.date;
+        if (!dailyData[dateStr]) {
+            dailyData[dateStr] = { income: 0, expense: 0 };
+        }
+        if (t.type === 'income') {
+            dailyData[dateStr].income += t.amount;
+        } else {
+            dailyData[dateStr].expense += t.amount;
+        }
+    });
+    
+    const sortedDates = Object.keys(dailyData).sort();
+    const incomeData = [];
+    const expenseData = [];
+    
+    sortedDates.forEach(d => {
+        incomeData.push(dailyData[d].income);
+        expenseData.push(dailyData[d].expense);
+    });
+    
+    if (financeTrendChartInstance) {
+        financeTrendChartInstance.destroy();
+    }
+    
+    const labels = sortedDates.length > 0 ? sortedDates : ['Ocak', 'Şubat', 'Mart'];
+    const finalIncome = sortedDates.length > 0 ? incomeData : [0, 0, 0];
+    const finalExpense = sortedDates.length > 0 ? expenseData : [0, 0, 0];
+    
+    financeTrendChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Gelir',
+                    data: finalIncome,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Gider',
+                    data: finalExpense,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#94a3b8'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                },
+                y: {
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                }
+            }
+        }
+    });
 }
 

@@ -1384,3 +1384,318 @@ body {
     border-color: var(--accent-color) !important;
     box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15) !important;
 }
+
+/* ----------------------------------------------------
+   5. YENİ ÖZELLİKLER STİLLERİ (KARŞILAMA, POMODORO, GRAFİK, BİLDİRİM, AVATAR)
+   ---------------------------------------------------- */
+
+/* Karşılama Kartı */
+.welcome-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(168, 85, 247, 0.15)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(16px);
+}
+
+.welcome-banner-content h2 {
+    font-family: var(--font-title);
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #ffffff, #d8b4fe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.welcome-banner-content p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    max-width: 500px;
+}
+
+.welcome-weather {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.weather-icon {
+    font-size: 2rem;
+}
+
+.weather-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-temp {
+    font-family: var(--font-title);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.weather-city {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Pomodoro Zamanlayıcı */
+.pomodoro-container {
+    margin-top: 1.5rem;
+}
+
+.pomodoro-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.pomodoro-timer-circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring {
+    position: absolute;
+    transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+    transition: stroke-dashoffset 0.35s;
+    transform-origin: 50% 50%;
+}
+
+.timer-display {
+    font-family: var(--font-title);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    z-index: 2;
+}
+
+.pomodoro-controls {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.pomodoro-mode-selector {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.pomodoro-mode-selector button {
+    background: none;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.pomodoro-mode-selector button.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Finans Çizgi Grafik */
+.finance-trend-chart-card {
+    margin-bottom: 2rem;
+}
+
+.finance-trend-chart-card h3 {
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.finance-trend-container {
+    width: 100%;
+    max-height: 250px;
+    position: relative;
+}
+
+/* Bildirim Merkezi (Header) */
+.notification-center {
+    position: relative;
+}
+
+.notification-trigger {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+    position: relative;
+}
+
+.notification-trigger:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.notif-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-app);
+}
+
+.notif-badge.hidden {
+    display: none;
+}
+
+.notification-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    width: 320px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+}
+
+.notification-dropdown.active {
+    display: flex;
+    animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.notif-dropdown-header h4 {
+    font-family: var(--font-title);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.notif-dropdown-header button {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.notif-list {
+    max-height: 280px;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.empty-notif-msg {
+    padding: 2rem 1.25rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.notif-item {
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.85rem;
+    transition: var(--transition-fast);
+}
+
+.notif-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.notif-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Avatar Seçici */
+.avatar-selector {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.avatar-option {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.avatar-option:hover {
+    transform: scale(1.08);
+    border-color: var(--accent-color);
+}
+
+.avatar-option.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
+}
+

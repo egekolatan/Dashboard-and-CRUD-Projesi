@@ -22,7 +22,7 @@
                     <svg viewBox="0 0 24 24" class="logo-icon">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span class="logo-text">NovaDash</span>
+                    <span class="logo-text">Kolatan</span>
                 </div>
             </div>
             
@@ -81,12 +81,43 @@
                         <span class="pulse-dot"></span>
                         <span class="indicator-text">Gerçek Zamanlı</span>
                     </div>
+                    <!-- Bildirim Zil Butonu ve Açılır Listesi -->
+                    <div class="notification-center">
+                        <button class="notification-trigger" id="notif-trigger" aria-label="Bildirimler">
+                            <span class="notif-bell-icon">🔔</span>
+                            <span class="notif-badge hidden" id="notif-badge-count">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notif-dropdown">
+                            <div class="notif-dropdown-header">
+                                <h4>Bildirimler</h4>
+                                <button id="clear-notifs-btn">Temizle</button>
+                            </div>
+                            <ul class="notif-list" id="notif-list-container">
+                                <li class="empty-notif-msg">Yeni bildirim bulunmuyor.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </header>
 
             <div class="content-body">
                 <!-- PANEL: OVERVIEW -->
                 <section class="tab-panel active" id="panel-overview">
+                    <!-- Akıllı Karşılama Paneli -->
+                    <div class="welcome-banner">
+                        <div class="welcome-banner-content">
+                            <h2 class="welcome-greeting" id="welcome-greeting-text">Yükleniyor...</h2>
+                            <p class="welcome-message" id="welcome-message-text">Bugün kontrol etmeniz gereken işler bulunuyor.</p>
+                        </div>
+                        <div class="welcome-weather">
+                            <span class="weather-icon" id="weather-icon-el">☀️</span>
+                            <div class="weather-info">
+                                <span class="weather-temp" id="weather-temp-el">28°C</span>
+                                <span class="weather-city">İzmir</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="metrics-grid">
                         <div class="stat-card gradient-1">
                             <div class="stat-header">
@@ -194,8 +225,30 @@
                                         </select>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Görev Ekle</button>
                             </form>
+                            
+                            <!-- Pomodoro Zamanlayıcı -->
+                            <div class="pomodoro-container">
+                                <hr class="card-divider">
+                                <h3>Pomodoro Sayacı</h3>
+                                <div class="pomodoro-widget">
+                                    <div class="pomodoro-timer-circle">
+                                        <svg class="progress-ring" width="120" height="120">
+                                            <circle class="progress-ring-circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" r="52" cx="60" cy="60"/>
+                                            <circle class="progress-ring-circle" id="pomodoro-progress" stroke="var(--accent-color)" stroke-width="6" fill="transparent" r="52" cx="60" cy="60"/>
+                                        </svg>
+                                        <div class="timer-display" id="pomodoro-time">25:00</div>
+                                    </div>
+                                    <div class="pomodoro-controls">
+                                        <button type="button" class="btn btn-sm btn-secondary" id="pomodoro-start">Başlat</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="pomodoro-reset">Sıfırla</button>
+                                    </div>
+                                    <div class="pomodoro-mode-selector">
+                                        <button type="button" class="btn btn-xs active" id="mode-work">Çalışma</button>
+                                        <button type="button" class="btn btn-xs" id="mode-break">Mola</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="todo-list-container card-panel">
@@ -258,6 +311,14 @@
                             </form>
                         </div>
                     </div>
+                    
+                    <!-- Gelir Gider Çizgi Grafik Analizi -->
+                    <div class="card-panel finance-trend-chart-card">
+                        <h3>Gelir-Gider Zaman Analizi</h3>
+                        <div class="finance-trend-container">
+                            <canvas id="financeTrendChart"></canvas>
+                        </div>
+                    </div>
 
                     <div class="card-panel finance-ledger">
                         <h3>Tüm İşlemler</h3>
@@ -310,6 +371,17 @@
                             <div class="form-group">
                                 <label for="settings-username">Adınız Soyadınız</label>
                                 <input type="text" id="settings-username" placeholder="Ege Kolatan">
+                            </div>
+                            <div class="form-group">
+                                <label>Profil Avatarı</label>
+                                <div class="avatar-selector" id="avatar-picker">
+                                    <div class="avatar-option active" data-char="E">E</div>
+                                    <div class="avatar-option" data-char="K">K</div>
+                                    <div class="avatar-option" data-char="👤">👤</div>
+                                    <div class="avatar-option" data-char="🚀">🚀</div>
+                                    <div class="avatar-option" data-char="🎯">🎯</div>
+                                    <div class="avatar-option" data-char="💻">💻</div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Tema Rengi Seçin</label>
