@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Chart.js for premium visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -59,32 +60,20 @@
                         <svg viewBox="0 0 24 24" class="theme-icon"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     </button>
                 </div>
-                <div class="user-profile">
-                    <div class="avatar" id="user-avatar-initial">E</div>
-                    <div class="user-info">
-                        <span class="user-name" id="display-username">Kullanıcı</span>
-                        <span class="user-role">Yönetici</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <header class="main-header">
-                <div class="header-left">
-                    <h1 class="page-title" id="page-title-text">Genel Bakış</h1>
-                    <p class="page-subtitle" id="current-date-time">Yükleniyor...</p>
-                </div>
-                <div class="header-right">
-                    <div class="realtime-indicator">
-                        <span class="pulse-dot"></span>
-                        <span class="indicator-text">Gerçek Zamanlı</span>
+                <div class="user-profile" style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <div class="avatar" id="user-avatar-initial">E</div>
+                        <div class="user-info">
+                            <span class="user-name" id="display-username">Kullanıcı</span>
+                            <span class="user-role">Yönetici</span>
+                        </div>
                     </div>
                     <!-- Bildirim Zil Butonu ve Açılır Listesi -->
                     <div class="notification-center">
-                        <button class="notification-trigger" id="notif-trigger" aria-label="Bildirimler">
-                            <span class="notif-bell-icon">🔔</span>
+                        <button class="notification-trigger" id="notif-trigger" aria-label="Bildirimler" style="background: none; border: none; padding: 0.45rem; cursor: pointer; transition: transform 0.15s ease;">
+                            <svg class="bell-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18" style="transition: transform 0.15s ease; color: var(--text-secondary);">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                            </svg>
                             <span class="notif-badge hidden" id="notif-badge-count">0</span>
                         </button>
                         <div class="notification-dropdown" id="notif-dropdown">
@@ -96,6 +85,38 @@
                                 <li class="empty-notif-msg">Yeni bildirim bulunmuyor.</li>
                             </ul>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <h1 class="page-title" id="page-title-text" style="margin: 0;">Genel Bakış</h1>
+                    
+                    <!-- Modern ve Kapsamlı Saat/Tarih Paneli -->
+                    <div class="header-clock-panel" style="display: flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 0.4rem 0.85rem; border-radius: var(--radius-md); font-family: var(--font-title); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <!-- Saat Bölümü -->
+                        <div style="display: flex; align-items: baseline; gap: 0.05rem;">
+                            <span id="clock-hour" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">00</span>
+                            <span id="clock-colon" class="blink-animation" style="font-size: 1.25rem; font-weight: 700; color: var(--accent-color);">:</span>
+                            <span id="clock-minute" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">00</span>
+                            <span id="clock-second" style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); margin-left: 0.2rem;">00</span>
+                        </div>
+                        <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15);"></div>
+                        <!-- Tarih Bölümü -->
+                        <div style="display: flex; flex-direction: column; line-height: 1.15;">
+                            <span id="clock-date" style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">01 Ocak 2026</span>
+                            <span id="clock-day" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Pazartesi</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="realtime-indicator">
+                        <span class="pulse-dot"></span>
+                        <span class="indicator-text">Gerçek Zamanlı</span>
                     </div>
                 </div>
             </header>
@@ -110,11 +131,17 @@
                             <p class="welcome-message" id="welcome-message-text">Bugün kontrol etmeniz gereken işler bulunuyor.</p>
                             <div class="welcome-quote" id="welcome-quote-el">💡 <em>Hayal edebildiğin her şey gerçektir.</em></div>
                         </div>
-                        <div class="welcome-weather">
-                            <span class="weather-icon" id="weather-icon-el">☀️</span>
-                            <div class="weather-info">
-                                <span class="weather-temp" id="weather-temp-el">28°C</span>
-                                <span class="weather-city">İzmir</span>
+                        <div class="welcome-weather" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: var(--radius-md); transition: all 0.3s ease;">
+                            <span class="weather-icon" id="weather-icon-el" style="font-size: 2.2rem;">☀️</span>
+                            <div class="weather-info" style="display: flex; flex-direction: column; justify-content: center;">
+                                <span class="weather-temp" id="weather-temp-el" style="font-size: 1.4rem; font-weight: 700; font-family: var(--font-title); color: var(--text-primary);">--°C</span>
+                                <span class="weather-city" id="weather-city-el" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Yükleniyor...</span>
+                            </div>
+                            <div id="weather-details-el" style="display: flex; flex-direction: column; font-size: 0.75rem; color: var(--text-secondary); border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 0.75rem; gap: 0.15rem; min-width: 110px;">
+                                <span id="weather-desc-el" style="font-weight: 600; color: var(--accent-color);">Durum: --</span>
+                                <span id="weather-feels-el">Hissedilen: --°C</span>
+                                <span id="weather-humidity-el">💧 Nem: %--</span>
+                                <span id="weather-wind-el">💨 Rüzgar: -- km/h</span>
                             </div>
                         </div>
                     </div>
@@ -167,24 +194,54 @@
                     </div>
 
                     <div class="dashboard-grid">
-                        <div class="dashboard-card main-chart-card">
-                            <div class="card-header">
-                                <h3>Sistem Performans Grafiği (Son 30 sn)</h3>
-                                <div class="chart-legend">
-                                    <span class="legend-item"><span class="legend-color cpu"></span>CPU</span>
-                                    <span class="legend-item"><span class="legend-color ram"></span>RAM</span>
-                                </div>
+                        <div class="dashboard-card main-chart-card" style="display: flex; flex-direction: column; height: 380px;">
+                            <div class="card-header" style="margin-bottom: 0.5rem;">
+                                <h3>Borsa İstanbul (BIST:XU100) Canlı Grafik</h3>
                             </div>
-                            <div class="chart-container">
-                                <canvas id="performanceChart"></canvas>
+                            <div class="chart-container" style="flex-grow: 1; height: 100%; position: relative;">
+                                <!-- TradingView Widget BEGIN -->
+                                <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                                    <div id="tradingview_bist" style="height: 100%; width: 100%;"></div>
+                                </div>
+                                <!-- TradingView Widget END -->
                             </div>
                         </div>
 
                         <div class="dashboard-card quick-widgets-card">
-                            <div class="quick-widget">
-                                <h3>Hızlı Not Al</h3>
-                                <textarea id="quick-note-textarea" placeholder="Aklınızdakileri buraya yazın, otomatik kaydedilir..."></textarea>
-                                <span class="save-status" id="quick-note-status">Kaydedildi</span>
+                            <div class="quick-widget" id="quick-note-container" style="display: flex; flex-direction: column; gap: 0.75rem; transition: all 0.3s ease; border-radius: var(--radius-md); padding: 0.25rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <h3>Hızlı Not Al</h3>
+                                    <!-- Yapışkan Not Renk Seçenekleri -->
+                                    <div class="note-color-picker" style="display: flex; gap: 0.4rem; align-items: center;">
+                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(254, 240, 138, 0.12)" data-color="#fde047" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #fef08a; cursor: pointer;" title="Sarı"></button>
+                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(191, 219, 254, 0.12)" data-color="#60a5fa" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #bfdbfe; cursor: pointer;" title="Mavi"></button>
+                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(187, 247, 208, 0.12)" data-color="#4ade80" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #bbf7d0; cursor: pointer;" title="Yeşil"></button>
+                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(244, 180, 26, 0.0)" data-color="" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #ffffff; cursor: pointer;" title="Varsayılan"></button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Araç Çubuğu -->
+                                <div style="display: flex; gap: 0.5rem; align-items: center; background: rgba(0,0,0,0.15); padding: 0.35rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                    <!-- Yazı Boyutu Ayarı -->
+                                    <select id="quick-note-size" style="background: none; border: none; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; outline: none;">
+                                        <option value="13px" style="background: var(--bg-card); color: var(--text-primary);">Küçük Yazı</option>
+                                        <option value="15px" style="background: var(--bg-card); color: var(--text-primary);" selected>Normal Yazı</option>
+                                        <option value="18px" style="background: var(--bg-card); color: var(--text-primary);">Büyük Yazı</option>
+                                    </select>
+                                    <div style="flex-grow: 1;"></div>
+                                    <!-- Kopyala Butonu -->
+                                    <button type="button" id="quick-note-copy" class="btn-icon" style="font-size: 0.8rem; background: none; border: none; cursor: pointer;" title="Kopyala">📋</button>
+                                    <!-- Temizle Butonu -->
+                                    <button type="button" id="quick-note-clear" class="btn-icon" style="font-size: 0.8rem; background: none; border: none; cursor: pointer;" title="Temizle">🗑️</button>
+                                </div>
+
+                                <textarea id="quick-note-textarea" placeholder="Aklınızdakileri buraya yazın, otomatik kaydedilir..." style="height: 180px; resize: vertical; font-size: 15px;"></textarea>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <!-- Sayaç Bilgileri -->
+                                    <span id="quick-note-stats" style="font-size: 0.7rem; color: var(--text-muted);">0 karakter | 0 kelime</span>
+                                    <span class="save-status" id="quick-note-status">Kaydedildi</span>
+                                </div>
                             </div>
                             <hr class="card-divider">
                             <div class="quick-widget">
@@ -403,39 +460,87 @@
                     <div class="card-panel settings-container">
                         <h3>Profil ve Kişiselleştirme</h3>
                         <form id="settings-form" class="dashboard-form">
-                            <div class="form-group">
-                                <label for="settings-username">Adınız Soyadınız</label>
-                                <input type="text" id="settings-username" placeholder="Ege Kolatan">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                                <div class="form-group">
+                                    <label for="settings-username">Adınız Soyadınız</label>
+                                    <input type="text" id="settings-username" placeholder="Ege Kolatan">
+                                </div>
+                                <div class="form-group">
+                                    <label for="settings-city">Hava Durumu Şehri</label>
+                                    <input type="text" id="settings-city" placeholder="Örn: İzmir">
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Profil Avatarı</label>
                                 <div class="avatar-selector" id="avatar-picker">
-                                    <div class="avatar-option active" data-char="E">E</div>
+                                    <div class="avatar-option" data-char="E">E</div>
                                     <div class="avatar-option" data-char="K">K</div>
                                     <div class="avatar-option" data-char="👤">👤</div>
                                     <div class="avatar-option" data-char="🚀">🚀</div>
                                     <div class="avatar-option" data-char="🎯">🎯</div>
                                     <div class="avatar-option" data-char="💻">💻</div>
+                                    <div class="avatar-option" data-char="🐱">🐱</div>
+                                    <div class="avatar-option" data-char="🦁">🦁</div>
+                                    <div class="avatar-option" data-char="🦊">🦊</div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Veya Kendi Resminizi Yükleyin</span>
+                                    <label for="settings-avatar-file" class="custom-file-upload" style="display: flex; align-items: center; gap: 0.75rem; border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 0.85rem 1rem; cursor: pointer; background: rgba(255, 255, 255, 0.02); max-width: 320px;">
+                                        <span style="font-size: 1.4rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📷</span>
+                                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem;">
+                                            <span style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600;">Profil resmi seçin</span>
+                                            <span style="font-size: 0.7rem; color: var(--text-muted);">PNG, JPG veya GIF</span>
+                                        </div>
+                                    </label>
+                                    <input type="file" id="settings-avatar-file" accept="image/*" style="display: none;">
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Tema Rengi Seçin</label>
                                 <div class="accent-color-picker">
-                                    <button type="button" class="accent-btn" data-color="#3b82f6" style="background-color: #3b82f6;"></button>
-                                    <button type="button" class="accent-btn" data-color="#10b981" style="background-color: #10b981;"></button>
-                                    <button type="button" class="accent-btn" data-color="#8b5cf6" style="background-color: #8b5cf6;"></button>
-                                    <button type="button" class="accent-btn" data-color="#f59e0b" style="background-color: #f59e0b;"></button>
-                                    <button type="button" class="accent-btn" data-color="#ef4444" style="background-color: #ef4444;"></button>
+                                    <button type="button" class="accent-btn" data-color="#3b82f6" style="background-color: #3b82f6;" title="Mavi"></button>
+                                    <button type="button" class="accent-btn" data-color="#0ea5e9" style="background-color: #0ea5e9;" title="Gök Mavisi"></button>
+                                    <button type="button" class="accent-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Turkuaz"></button>
+                                    <button type="button" class="accent-btn" data-color="#14b8a6" style="background-color: #14b8a6;" title="Teal"></button>
+                                    <button type="button" class="accent-btn" data-color="#10b981" style="background-color: #10b981;" title="Zümrüt Yeşil"></button>
+                                    <button type="button" class="accent-btn" data-color="#22c55e" style="background-color: #22c55e;" title="Yeşil"></button>
+                                    <button type="button" class="accent-btn" data-color="#84cc16" style="background-color: #84cc16;" title="Fıstık Yeşili"></button>
+                                    <button type="button" class="accent-btn" data-color="#eab308" style="background-color: #eab308;" title="Sarı"></button>
+                                    <button type="button" class="accent-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Amber"></button>
+                                    <button type="button" class="accent-btn" data-color="#f97316" style="background-color: #f97316;" title="Turuncu"></button>
+                                    <button type="button" class="accent-btn" data-color="#f43f5e" style="background-color: #f43f5e;" title="Gül Rengi"></button>
+                                    <button type="button" class="accent-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Kırmızı"></button>
+                                    <button type="button" class="accent-btn" data-color="#b91c1c" style="background-color: #b91c1c;" title="Koyu Kırmızı"></button>
+                                    <button type="button" class="accent-btn" data-color="#ec4899" style="background-color: #ec4899;" title="Pembe"></button>
+                                    <button type="button" class="accent-btn" data-color="#d946ef" style="background-color: #d946ef;" title="Fuşya"></button>
+                                    <button type="button" class="accent-btn" data-color="#a855f7" style="background-color: #a855f7;" title="Eflatun"></button>
+                                    <button type="button" class="accent-btn" data-color="#8b5cf6" style="background-color: #8b5cf6;" title="Mor"></button>
+                                    <button type="button" class="accent-btn" data-color="#6366f1" style="background-color: #6366f1;" title="İndigo"></button>
+                                    <button type="button" class="accent-btn" data-color="#475569" style="background-color: #475569;" title="Slate Gri"></button>
+                                    <button type="button" class="accent-btn" data-color="#78350f" style="background-color: #78350f;" title="Kahverengi"></button>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
                         </form>
 
-                        <hr class="card-divider">
+                        <hr class="card-divider" style="margin: 2rem 0; border-color: rgba(255,255,255,0.05);">
 
-                        <h3>Veri Yönetimi</h3>
-                        <p class="settings-warning-text">Aşağıdaki işlem localStorage üzerindeki tüm görevleri, bütçe verilerini ve notları kalıcı olarak temizler.</p>
-                        <button class="btn btn-danger" id="clear-all-data-btn">Tüm Verileri Sıfırla</button>
+                        <div class="danger-zone-card" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-md); padding: 1.5rem; margin-top: 1.5rem;">
+                            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                                    ⚠️
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="color: #ef4444; font-size: 1.05rem; margin: 0 0 0.5rem 0; font-family: var(--font-title); font-weight: 600;">Tehlikeli Bölge: Veri Yönetimi</h4>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 1.2rem 0;">
+                                        Bu işlem hesabınıza ait tüm verileri (görevler, bütçe işlemleri, notlar ve profil tercihleri) kalıcı olarak sıfırlayacak ve oturumunuzu kapatacaktır. Bu işlem geri alınamaz.
+                                    </p>
+                                    <button class="btn btn-danger" id="clear-all-data-btn" style="background-color: #ef4444; border-color: #ef4444; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.85rem; padding: 0.6rem 1.2rem; transition: all 0.2s ease;">
+                                        <span>🗑️</span> Hesabımı ve Verileri Sıfırla
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>

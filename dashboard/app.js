@@ -1,36 +1,45 @@
 // Giriş Doğrulama Kontrolü (Güvenlik Kapısı)
 const loggedInUser = JSON.parse(localStorage.getItem('auth_crud_current_user'));
-if (!loggedInUser || loggedInUser.email !== 'egekolatan114@gmail.com') {
-    // Giriş yapılmadıysa veya yanlış kullanıcıysa doğrudan giriş sayfasına yönlendir
+if (!loggedInUser) {
+    // Giriş yapılmadıysa doğrudan giriş sayfasına yönlendir
     window.location.href = '../auth-crud/';
 }
 
+// Her kullanıcının verilerini izole etmek için benzersiz bir önek oluşturuyoruz
+const userPrefix = loggedInUser ? loggedInUser.email + '_' : '';
+
 // App State Managers & Storage Keys
 const KEYS = {
-    THEME: 'novadash_theme',
-    ACCENT: 'novadash_accent',
-    USERNAME: 'novadash_username',
-    TASKS: 'novadash_tasks',
-    TRANSACTIONS: 'novadash_transactions',
-    NOTES: 'novadash_notes',
-    QUICK_NOTE: 'novadash_quick_note',
-    ACTIVE_NOTE_ID: 'novadash_active_note_id',
-    AVATAR: 'novadash_avatar',
-    NOTIFICATIONS: 'novadash_notifications'
-};
+    THEME: userPrefix + 'novadash_theme',
+    ACCENT: userPrefix + 'novadash_accent',
+    USERNAME: userPrefix + 'novadash_username',
+    TASKS: userPrefix + 'novadash_tasks',
+    TRANSACTIONS: userPrefix + 'novadash_transactions',
+    NOTES: userPrefix + 'novadash_notes',
+    QUICK_NOTE: userPrefix + 'novadash_quick_note',
+    ACTIVE_NOTE_ID: userPrefix + 'novadash_active_note_id',
+    AVATAR: userPrefix + 'novadash_avatar',
+    NOTIFICATIONS: userPrefix + 'novadash_notifications',
+    CITY: userPrefix + 'novadash_city',
+    NOTE_BG: userPrefix + 'novadash_note_bg',
+    NOTE_SIZE: userPrefix + 'novadash_note_size'
+};Location = window.location;
 
 // State Object
 let state = {
     theme: localStorage.getItem(KEYS.THEME) || 'dark',
     accent: localStorage.getItem(KEYS.ACCENT) || '#3b82f6',
-    username: localStorage.getItem(KEYS.USERNAME) || 'Ege Kolatan',
+    username: localStorage.getItem(KEYS.USERNAME) || (loggedInUser ? loggedInUser.name : 'Ege Kolatan'),
     tasks: JSON.parse(localStorage.getItem(KEYS.TASKS)) || [],
     transactions: JSON.parse(localStorage.getItem(KEYS.TRANSACTIONS)) || [],
     notes: JSON.parse(localStorage.getItem(KEYS.NOTES)) || [],
     quickNote: localStorage.getItem(KEYS.QUICK_NOTE) || '',
     activeNoteId: localStorage.getItem(KEYS.ACTIVE_NOTE_ID) || null,
-    avatar: localStorage.getItem(KEYS.AVATAR) || 'E',
-    notifications: JSON.parse(localStorage.getItem(KEYS.NOTIFICATIONS)) || []
+    avatar: localStorage.getItem(KEYS.AVATAR) || (loggedInUser && loggedInUser.name ? loggedInUser.name.charAt(0).toUpperCase() : 'E'),
+    notifications: JSON.parse(localStorage.getItem(KEYS.NOTIFICATIONS)) || [],
+    city: localStorage.getItem(KEYS.CITY) || 'İzmir',
+    noteBg: localStorage.getItem(userPrefix + 'novadash_note_bg') || '',
+    noteSize: localStorage.getItem(userPrefix + 'novadash_note_size') || '15px'
 };
 
 
@@ -59,12 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initClock();
     initRealtimeSimulation();
+    initTradingViewWidget();
     initOverviewPanel();
     initTasksPanel();
     initFinancePanel();
     initNotesPanel();
     initSettingsPanel();
     initWelcomeBanner();
+    updateWeather();
     initPomodoro();
     initNotifications();
     initShortcuts();
@@ -107,10 +118,8 @@ function setTheme(theme) {
         darkBtn.classList.remove('active');
     }
     
-    // Re-render charts to look good on the new theme background if they exist
-    if (performanceChartInstance) {
-        updatePerformanceChartColors();
-    }
+    // Re-initialize TradingView widget to match new theme
+    initTradingViewWidget();
 }
 
 function initAccentColor() {
@@ -177,14 +186,31 @@ function initNavigation() {
 // CLOCK / TIME TRACKER
 // ----------------------------------------------------
 function initClock() {
-    const dateTimeEl = document.getElementById('current-date-time');
+    const hourEl = document.getElementById('clock-hour');
+    const minuteEl = document.getElementById('clock-minute');
+    const secondEl = document.getElementById('clock-second');
+    const dateEl = document.getElementById('clock-date');
+    const dayEl = document.getElementById('clock-day');
     
     function updateClock() {
         const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const dateStr = now.toLocaleDateString('tr-TR', options);
-        const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        dateTimeEl.textContent = `${dateStr} | ${timeStr}`;
+        
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        
+        if (hourEl) hourEl.textContent = hh;
+        if (minuteEl) minuteEl.textContent = mm;
+        if (secondEl) secondEl.textContent = ss;
+        
+        const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+        const dateStr = now.toLocaleDateString('tr-TR', dateOptions);
+        
+        const dayOptions = { weekday: 'long' };
+        const dayStr = now.toLocaleDateString('tr-TR', dayOptions);
+        
+        if (dateEl) dateEl.textContent = dateStr;
+        if (dayEl) dayEl.textContent = dayStr;
     }
     
     updateClock();
@@ -200,58 +226,7 @@ function initRealtimeSimulation() {
     const ramValEl = document.getElementById('stat-ram');
     const ramProgress = document.getElementById('ram-progress');
     
-    // Setup Chart.js Performance Chart
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    
-    performanceChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: systemHistory.labels,
-            datasets: [
-                {
-                    label: 'CPU',
-                    data: systemHistory.cpu,
-                    borderColor: state.accent,
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 0
-                },
-                {
-                    label: 'RAM',
-                    data: systemHistory.ram,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 0
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                x: { display: false },
-                y: {
-                    min: 0,
-                    max: 100,
-                    ticks: {
-                        color: state.theme === 'dark' ? '#9ca3af' : '#64748b',
-                        font: { family: 'Inter' }
-                    },
-                    grid: {
-                        color: state.theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                    }
-                }
-            }
-        }
-    });
+    if (!cpuValEl || !cpuProgress || !ramValEl || !ramProgress) return;
 
     function updateSimulation() {
         // Generate random, smooth values
@@ -276,9 +251,6 @@ function initRealtimeSimulation() {
         systemHistory.cpu.push(newCpu);
         systemHistory.ram.shift();
         systemHistory.ram.push(newRam);
-        
-        // Update chart
-        performanceChartInstance.update('none');
     }
     
     // Run simulation tick every 2 seconds
@@ -286,13 +258,30 @@ function initRealtimeSimulation() {
     setInterval(updateSimulation, 2000);
 }
 
+function initTradingViewWidget() {
+    if (typeof TradingView !== 'undefined' && document.getElementById('tradingview_bist')) {
+        // Clear previous widget content to avoid overlays on theme switch
+        document.getElementById('tradingview_bist').innerHTML = '';
+        
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": "BIST:XU100",
+            "interval": "D",
+            "timezone": "Europe/Istanbul",
+            "theme": state.theme === 'light' ? 'light' : 'dark',
+            "style": "1",
+            "locale": "tr",
+            "toolbar_bg": state.theme === 'light' ? '#f1f3f6' : '#1e222d',
+            "enable_publishing": false,
+            "hide_side_toolbar": false,
+            "allow_symbol_change": true,
+            "container_id": "tradingview_bist"
+        });
+    }
+}
+
 function updatePerformanceChartColors() {
-    if (!performanceChartInstance) return;
-    
-    performanceChartInstance.data.datasets[0].borderColor = state.accent;
-    performanceChartInstance.options.scales.y.ticks.color = state.theme === 'dark' ? '#9ca3af' : '#64748b';
-    performanceChartInstance.options.scales.y.grid.color = state.theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-    performanceChartInstance.update();
+    // Stubbed out as Chart is replaced by TradingView Widget
 }
 
 // ----------------------------------------------------
@@ -302,24 +291,126 @@ function initOverviewPanel() {
     // Quick Note Auto-save jotter
     const quickNoteArea = document.getElementById('quick-note-textarea');
     const quickNoteStatus = document.getElementById('quick-note-status');
+    const quickNoteContainer = document.getElementById('quick-note-container');
+    const quickNoteStats = document.getElementById('quick-note-stats');
+    const sizeSelector = document.getElementById('quick-note-size');
+    const copyBtn = document.getElementById('quick-note-copy');
+    const clearBtn = document.getElementById('quick-note-clear');
+    const colorBtns = document.querySelectorAll('.quick-note-color-btn');
     
-    quickNoteArea.value = state.quickNote;
+    // 1. Initial State Loading
+    if (quickNoteArea) {
+        quickNoteArea.value = state.quickNote || '';
+        quickNoteArea.style.fontSize = state.noteSize || '15px';
+    }
     
-    let debounceTimer;
-    quickNoteArea.addEventListener('input', () => {
-        quickNoteStatus.textContent = 'Kaydediliyor...';
-        quickNoteStatus.classList.add('visible');
-        
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            state.quickNote = quickNoteArea.value;
-            saveState(KEYS.QUICK_NOTE, state.quickNote);
-            quickNoteStatus.textContent = 'Kaydedildi';
-            setTimeout(() => {
-                quickNoteStatus.classList.remove('visible');
-            }, 1000);
-        }, 800);
+    if (sizeSelector) {
+        sizeSelector.value = state.noteSize || '15px';
+    }
+    
+    if (quickNoteContainer && state.noteBg) {
+        quickNoteContainer.style.background = state.noteBg;
+        quickNoteContainer.style.borderColor = state.noteBg !== 'rgba(244, 180, 26, 0.0)' ? 'rgba(255,255,255,0.08)' : '';
+    }
+    
+    // Live stats counter helper
+    function updateNoteStats() {
+        if (!quickNoteArea || !quickNoteStats) return;
+        const text = quickNoteArea.value;
+        const charCount = text.length;
+        const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+        quickNoteStats.textContent = `${charCount} karakter | ${wordCount} kelime`;
+    }
+    updateNoteStats();
+
+    // 2. Sizing Action
+    if (sizeSelector && quickNoteArea) {
+        sizeSelector.addEventListener('change', () => {
+            state.noteSize = sizeSelector.value;
+            saveState(KEYS.NOTE_SIZE, state.noteSize);
+            quickNoteArea.style.fontSize = state.noteSize;
+        });
+    }
+
+    // 3. Coloring Action
+    colorBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bg = btn.dataset.bg;
+            state.noteBg = bg;
+            saveState(KEYS.NOTE_BG, bg);
+            if (quickNoteContainer) {
+                quickNoteContainer.style.background = bg;
+                // Add soft border styling to highlight customization
+                if (bg && bg !== 'rgba(244, 180, 26, 0.0)') {
+                    quickNoteContainer.style.border = `1px solid ${btn.dataset.color || 'var(--border-color)'}`;
+                } else {
+                    quickNoteContainer.style.border = '';
+                }
+            }
+        });
     });
+
+    // 4. Copy to Clipboard
+    if (copyBtn && quickNoteArea) {
+        copyBtn.addEventListener('click', () => {
+            if (quickNoteArea.value.trim() === '') {
+                quickNoteStatus.textContent = 'Kopyalanacak metin yok';
+                quickNoteStatus.classList.add('visible');
+                setTimeout(() => quickNoteStatus.classList.remove('visible'), 1000);
+                return;
+            }
+            navigator.clipboard.writeText(quickNoteArea.value).then(() => {
+                quickNoteStatus.textContent = '📋 Kopyalandı!';
+                quickNoteStatus.classList.add('visible');
+                setTimeout(() => {
+                    quickNoteStatus.classList.remove('visible');
+                    quickNoteStatus.textContent = 'Kaydedildi';
+                }, 1200);
+            });
+        });
+    }
+
+    // 5. Clear text
+    if (clearBtn && quickNoteArea) {
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Not alanını temizlemek istediğinizden emin misiniz?')) {
+                quickNoteArea.value = '';
+                state.quickNote = '';
+                saveState(KEYS.QUICK_NOTE, '');
+                updateNoteStats();
+                quickNoteStatus.textContent = 'Temizlendi';
+                quickNoteStatus.classList.add('visible');
+                setTimeout(() => {
+                    quickNoteStatus.classList.remove('visible');
+                    quickNoteStatus.textContent = 'Kaydedildi';
+                }, 1000);
+            }
+        });
+    }
+
+    // 6. Typing Debounce and Save
+    let debounceTimer;
+    if (quickNoteArea) {
+        quickNoteArea.addEventListener('input', () => {
+            updateNoteStats();
+            if (quickNoteStatus) {
+                quickNoteStatus.textContent = 'Kaydediliyor...';
+                quickNoteStatus.classList.add('visible');
+            }
+            
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                state.quickNote = quickNoteArea.value;
+                saveState(KEYS.QUICK_NOTE, state.quickNote);
+                if (quickNoteStatus) {
+                    quickNoteStatus.textContent = 'Kaydedildi';
+                    setTimeout(() => {
+                        quickNoteStatus.classList.remove('visible');
+                    }, 1000);
+                }
+            }, 800);
+        });
+    }
     
     // Update stats values initially
     updateOverviewStats();
@@ -945,25 +1036,99 @@ function clearNoteEditor() {
 function initSettingsPanel() {
     const settingsForm = document.getElementById('settings-form');
     const settingsUsername = document.getElementById('settings-username');
+    const settingsCity = document.getElementById('settings-city');
     const clearAllDataBtn = document.getElementById('clear-all-data-btn');
-    
-    // Init name UI
-    settingsUsername.value = state.username;
-    
-    // Highlight correct avatar in picker
     const avatarPicker = document.getElementById('avatar-picker');
+    const avatarFileInput = document.getElementById('settings-avatar-file');
+    
+    // Init values
+    settingsUsername.value = state.username;
+    if (settingsCity) {
+        settingsCity.value = state.city || 'İzmir';
+    }
+    
+    // Helper to clear active class from all options
+    function clearActiveAvatars() {
+        if (avatarPicker) {
+            avatarPicker.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('active'));
+        }
+    }
+    
+    // Check if current avatar is a custom uploaded image (base64)
+    const isCustomAvatar = state.avatar && state.avatar.startsWith('data:image/');
+    
     if (avatarPicker) {
+        // Render existing custom avatar if present
+        if (isCustomAvatar) {
+            const customOpt = document.createElement('div');
+            customOpt.className = 'avatar-option active';
+            customOpt.dataset.char = state.avatar;
+            customOpt.dataset.custom = 'true';
+            customOpt.style.backgroundImage = `url("${state.avatar}")`;
+            customOpt.style.backgroundSize = 'cover';
+            customOpt.style.backgroundPosition = 'center';
+            customOpt.textContent = '';
+            avatarPicker.appendChild(customOpt);
+            
+            customOpt.addEventListener('click', () => {
+                clearActiveAvatars();
+                customOpt.classList.add('active');
+            });
+        }
+        
+        // Highlight correct avatar in picker
         const avatarOptions = avatarPicker.querySelectorAll('.avatar-option');
         avatarOptions.forEach(opt => {
-            if (opt.dataset.char === state.avatar) {
+            if (!isCustomAvatar && opt.dataset.char === state.avatar) {
                 opt.classList.add('active');
-            } else {
-                opt.classList.remove('active');
+            } else if (!isCustomAvatar && !state.avatar && opt.dataset.char === 'E') {
+                opt.classList.add('active'); // Default fallback
             }
+            
             opt.addEventListener('click', () => {
-                avatarOptions.forEach(o => o.classList.remove('active'));
+                clearActiveAvatars();
                 opt.classList.add('active');
             });
+        });
+    }
+    
+    // Handle File Input Change
+    if (avatarFileInput && avatarPicker) {
+        avatarFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const base64Image = evt.target.result;
+                    
+                    // Remove any previous custom avatar option
+                    const oldCustom = avatarPicker.querySelector('.avatar-option[data-custom="true"]');
+                    if (oldCustom) {
+                        oldCustom.remove();
+                    }
+                    
+                    // Create new custom option
+                    const newCustomOpt = document.createElement('div');
+                    newCustomOpt.className = 'avatar-option active';
+                    newCustomOpt.dataset.char = base64Image;
+                    newCustomOpt.dataset.custom = 'true';
+                    newCustomOpt.style.backgroundImage = `url("${base64Image}")`;
+                    newCustomOpt.style.backgroundSize = 'cover';
+                    newCustomOpt.style.backgroundPosition = 'center';
+                    newCustomOpt.textContent = '';
+                    
+                    // Deactivate all others
+                    clearActiveAvatars();
+                    
+                    // Append and bind click
+                    avatarPicker.appendChild(newCustomOpt);
+                    newCustomOpt.addEventListener('click', () => {
+                        clearActiveAvatars();
+                        newCustomOpt.classList.add('active');
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
         });
     }
     
@@ -975,12 +1140,25 @@ function initSettingsPanel() {
         state.username = settingsUsername.value || 'Kullanıcı';
         saveState(KEYS.USERNAME, state.username);
         
+        if (settingsCity) {
+            state.city = settingsCity.value.trim() || 'İzmir';
+            saveState(KEYS.CITY, state.city);
+            updateWeather();
+        }
+        
         // Save selected avatar
         if (avatarPicker) {
             const selectedAvatarOpt = avatarPicker.querySelector('.avatar-option.active');
             if (selectedAvatarOpt) {
                 state.avatar = selectedAvatarOpt.dataset.char;
                 saveState(KEYS.AVATAR, state.avatar);
+                
+                // If it is a character (not custom image), sync with login avatar in parent key if needed
+                if (!state.avatar.startsWith('data:image/')) {
+                    localStorage.setItem('novadash_avatar', state.avatar);
+                } else {
+                    localStorage.setItem('novadash_avatar', '📸'); // Use camera emoji as general fallback for base64 in short areas if needed
+                }
             }
         }
         
@@ -1001,13 +1179,15 @@ function initSettingsPanel() {
     
     clearAllDataBtn.addEventListener('click', () => {
         if (confirm('Tüm verilerinizi (görevler, işlemler, notlar) sıfırlamak istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
-            localStorage.clear();
+            // Sadece bu kullanıcıya ait verileri temizle
+            Object.values(KEYS).forEach(key => localStorage.removeItem(key));
+            localStorage.removeItem('auth_crud_current_user');
             
             // Reset local state
             state = {
                 theme: 'dark',
                 accent: '#3b82f6',
-                username: 'Ege Kolatan',
+                username: loggedInUser ? loggedInUser.name : 'Ege Kolatan',
                 tasks: [],
                 transactions: [],
                 notes: [],
@@ -1015,8 +1195,8 @@ function initSettingsPanel() {
                 activeNoteId: null
             };
             
-            // Reload page to re-initialize everything from fresh empty state
-            window.location.reload();
+            // Giriş sayfasına yönlendir (çünkü kullanıcı verisi ve oturum silindi)
+            window.location.href = '../auth-crud/';
         }
     });
 }
@@ -1026,7 +1206,15 @@ function updateUsernameUI() {
     
     const avatarEl = document.getElementById('user-avatar-initial');
     if (avatarEl) {
-        avatarEl.textContent = state.avatar;
+        if (state.avatar && (state.avatar.startsWith('data:image/') || state.avatar.startsWith('http://') || state.avatar.startsWith('https://') || state.avatar.startsWith('/'))) {
+            avatarEl.style.backgroundImage = `url("${state.avatar}")`;
+            avatarEl.style.backgroundSize = 'cover';
+            avatarEl.style.backgroundPosition = 'center';
+            avatarEl.textContent = '';
+        } else {
+            avatarEl.style.backgroundImage = '';
+            avatarEl.textContent = state.avatar || 'K';
+        }
     }
     
     // Profil alanına tıklanınca çıkış yapma özelliği ekle
@@ -1519,5 +1707,101 @@ function triggerConfetti() {
     }
     
     draw();
+}
+
+// ----------------------------------------------------
+// GERÇEK ZAMANLI HAVA DURUMU SİSTEMİ (OPEN-METEO INTEGRATION)
+// ----------------------------------------------------
+
+function getWeatherDetails(code) {
+    const mapping = {
+        0: { icon: '☀️', desc: 'Açık Güneşli' },
+        1: { icon: '🌤️', desc: 'Çoğunlukla Açık' },
+        2: { icon: '⛅', desc: 'Parçalı Bulutlu' },
+        3: { icon: '☁️', desc: 'Bulutlu / Kapalı' },
+        45: { icon: '🌫️', desc: 'Sisli' },
+        48: { icon: '🌫️', desc: 'Kırağı Sisli' },
+        51: { icon: '🌧️', desc: 'Hafif Çisenti' },
+        53: { icon: '🌧️', desc: 'Çisenti' },
+        55: { icon: '🌧️', desc: 'Yoğun Çisenti' },
+        61: { icon: '🌧️', desc: 'Hafif Yağmurlu' },
+        63: { icon: '🌧️', desc: 'Yağmurlu' },
+        65: { icon: '🌧️', desc: 'Şiddetli Yağmurlu' },
+        71: { icon: '❄️', desc: 'Hafif Karlı' },
+        73: { icon: '❄️', desc: 'Karlı' },
+        75: { icon: '❄️', desc: 'Yoğun Karlı' },
+        77: { icon: '❄️', desc: 'Kar Atıştırmalı' },
+        80: { icon: '🌧️', desc: 'Hafif Sağanak' },
+        81: { icon: '🌧️', desc: 'Sağanak Yağışlı' },
+        82: { icon: '🌧️', desc: 'Şiddetli Sağanak' },
+        85: { icon: '❄️', desc: 'Kar Sağanağı' },
+        86: { icon: '❄️', desc: 'Yoğun Kar Sağanağı' },
+        95: { icon: '⛈️', desc: 'Gök Gürültülü Fırtına' },
+        96: { icon: '⛈️', desc: 'Gök Gürültülü Hafif Dolu' },
+        99: { icon: '⛈️', desc: 'Gök Gürültülü Yoğun Dolu' }
+    };
+    return mapping[code] || { icon: '☀️', desc: 'Açık' };
+}
+
+async function updateWeather() {
+    const tempEl = document.getElementById('weather-temp-el');
+    const cityEl = document.getElementById('weather-city-el');
+    const iconEl = document.getElementById('weather-icon-el');
+    const descEl = document.getElementById('weather-desc-el');
+    const feelsEl = document.getElementById('weather-feels-el');
+    const humidityEl = document.getElementById('weather-humidity-el');
+    const windEl = document.getElementById('weather-wind-el');
+    
+    if (!tempEl || !cityEl) return;
+    
+    const city = state.city || 'İzmir';
+    cityEl.textContent = city;
+    
+    try {
+        // 1. Geocode City to Coordinates
+        const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=tr`;
+        const geoRes = await fetch(geocodeUrl);
+        const geoData = await geoRes.json();
+        
+        if (!geoData.results || geoData.results.length === 0) {
+            cityEl.textContent = 'Bilinmeyen Şehir';
+            return;
+        }
+        
+        const loc = geoData.results[0];
+        const lat = loc.latitude;
+        const lon = loc.longitude;
+        const countryName = loc.country || 'TR';
+        
+        cityEl.textContent = `${loc.name}, ${countryName}`;
+        
+        // 2. Fetch Forecast Weather Data
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`;
+        const weatherRes = await fetch(weatherUrl);
+        const weatherData = await weatherRes.json();
+        
+        if (!weatherData.current) return;
+        
+        const current = weatherData.current;
+        const temp = Math.round(current.temperature_2m);
+        const feels = Math.round(current.apparent_temperature);
+        const humidity = current.relative_humidity_2m;
+        const wind = Math.round(current.wind_speed_10m);
+        const weatherCode = current.weather_code;
+        
+        const details = getWeatherDetails(weatherCode);
+        
+        // DOM Updates
+        tempEl.textContent = `${temp}°C`;
+        if (iconEl) iconEl.textContent = details.icon;
+        if (descEl) descEl.textContent = `Durum: ${details.desc}`;
+        if (feelsEl) feelsEl.textContent = `Hissedilen: ${feels}°C`;
+        if (humidityEl) humidityEl.textContent = `💧 Nem: %${humidity}`;
+        if (windEl) windEl.textContent = `💨 Rüzgar: ${wind} km/h`;
+        
+    } catch (e) {
+        console.error('Hava durumu verisi alınamadı:', e);
+        cityEl.textContent = 'Bağlantı Hatası';
+    }
 }
 

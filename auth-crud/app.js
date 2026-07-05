@@ -20,6 +20,18 @@ let appState = {
     products: [] // DOMContentLoaded aşamasında initProducts() ile doldurulacak
 };
 
+// Varsayılan Yönetici Bilgileri Kontrolü ve Ekleme
+const defaultAdmin = {
+    name: 'Ege Kolatan',
+    email: 'egekolatan114@gmail.com',
+    password: 'Ege352008'
+};
+
+if (!appState.users.some(u => u.email === defaultAdmin.email)) {
+    appState.users.push(defaultAdmin);
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
+}
+
 // Ürünleri Güvenli Yükleme Fonksiyonu
 function initProducts() {
     try {
@@ -68,6 +80,65 @@ function checkAuthStatus() {
 // Kimlik Doğrulama olaylarını kuran fonksiyon
 function setupAuthEvents() {
     const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    
+    // Sekmeler Arası Geçiş Mantığı
+    if (tabLogin && tabRegister) {
+        tabLogin.addEventListener('click', () => {
+            tabLogin.classList.add('active');
+            tabRegister.classList.remove('active');
+            loginForm.classList.add('active');
+            registerForm.classList.remove('active');
+            clearAuthAlert();
+        });
+        
+        tabRegister.addEventListener('click', () => {
+            tabRegister.classList.add('active');
+            tabLogin.classList.remove('active');
+            registerForm.classList.add('active');
+            loginForm.classList.remove('active');
+            clearAuthAlert();
+        });
+    }
+
+    // Kayıt Formu Gönderme (Submit) İşlemi
+    if (registerForm) {
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim().toLowerCase();
+            const password = document.getElementById('register-password').value;
+            
+            // E-posta formatı ve şifre uzunluğu kontrolleri
+            if (!email || !password || !name) {
+                showAuthAlert('Lütfen tüm alanları doldurun.', 'error');
+                return;
+            }
+            
+            // Kullanıcı zaten kayıtlı mı kontrolü
+            const userExists = appState.users.some(u => u.email === email);
+            if (userExists) {
+                showAuthAlert('Bu e-posta adresi zaten kayıtlı!', 'error');
+                return;
+            }
+            
+            // Yeni kullanıcıyı ekle
+            const newUser = { name, email, password };
+            appState.users.push(newUser);
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(appState.users));
+            
+            showAuthAlert('Kayıt başarıyla tamamlandı! Giriş yapabilirsiniz.', 'success');
+            registerForm.reset();
+            
+            // Giriş sekmesine otomatik geçiş yap
+            setTimeout(() => {
+                tabLogin.click();
+            }, 1500);
+        });
+    }
     
     // Giriş Formu Gönderme (Submit) İşlemi
     loginForm.addEventListener('submit', (e) => {
@@ -76,17 +147,17 @@ function setupAuthEvents() {
         const email = document.getElementById('login-email').value.trim().toLowerCase();
         const password = document.getElementById('login-password').value;
         
-        // Sabit Yönetici Bilgileri Kontrolü
-        const adminEmail = 'egekolatan114@gmail.com';
-        const adminPassword = 'Ege352008';
+        // Kayıtlı kullanıcı listesinde eşleşme ara
+        const user = appState.users.find(u => u.email === email && u.password === password);
         
-        if (email === adminEmail && password === adminPassword) {
+        if (user) {
             // Başarılı giriş: Aktif kullanıcıyı ayarla ve kaydet
-            appState.currentUser = { name: 'Ege Kolatan', email: adminEmail };
+            appState.currentUser = { name: user.name, email: user.email };
             localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(appState.currentUser));
             
-            // Dashboard'da görüntülenecek kullanıcı adını da ayarla
-            localStorage.setItem('novadash_username', 'Ege Kolatan');
+            // Dashboard'da görüntülenecek kullanıcı adı ve avatar simgesini ayarla
+            localStorage.setItem('novadash_username', user.name);
+            localStorage.setItem('novadash_avatar', user.name.charAt(0).toUpperCase());
             
             showAuthAlert('Giriş başarılı! Dashboard sayfasına yönlendiriliyorsunuz...', 'success');
             loginForm.reset();
@@ -113,43 +184,54 @@ function setupAuthEvents() {
 // Bildirim Mesajı Gösterme
 function showAuthAlert(message, type) {
     const alertEl = document.getElementById('auth-alert');
-    alertEl.textContent = message;
-    alertEl.className = `alert-message ${type}`;
+    if (alertEl) {
+        alertEl.textContent = message;
+        alertEl.className = `alert-message ${type}`;
+    }
 }
 
 // Bildirim Alanını Temizleme
 function clearAuthAlert() {
     const alertEl = document.getElementById('auth-alert');
-    alertEl.textContent = '';
-    alertEl.className = 'alert-message';
+    if (alertEl) {
+        alertEl.textContent = '';
+        alertEl.className = 'alert-message';
+    }
 }
 
 // Şifre Göster/Gizle Butonunu Aktif Eden Fonksiyon
 function setupPasswordToggle() {
-    const passwordInput = document.getElementById('login-password');
-    const toggleButton = document.getElementById('toggle-password');
-    if (!passwordInput || !toggleButton) return;
+    const toggles = [
+        { inputId: 'login-password', btnId: 'toggle-password' },
+        { inputId: 'register-password', btnId: 'toggle-reg-password' }
+    ];
     
-    toggleButton.addEventListener('click', () => {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
+    toggles.forEach(({ inputId, btnId }) => {
+        const passwordInput = document.getElementById(inputId);
+        const toggleButton = document.getElementById(btnId);
+        if (!passwordInput || !toggleButton) return;
         
-        if (type === 'text') {
-            toggleButton.innerHTML = `
-                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-                </svg>
-            `;
-            toggleButton.setAttribute('aria-label', 'Şifreyi Gizle');
-        } else {
-            toggleButton.innerHTML = `
-                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                </svg>
-            `;
-            toggleButton.setAttribute('aria-label', 'Şifreyi Göster');
-        }
+        toggleButton.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                toggleButton.innerHTML = `
+                    <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                `;
+                toggleButton.setAttribute('aria-label', 'Şifreyi Gizle');
+            } else {
+                toggleButton.innerHTML = `
+                    <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                `;
+                toggleButton.setAttribute('aria-label', 'Şifreyi Göster');
+            }
+        });
     });
 }
 
