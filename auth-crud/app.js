@@ -20,10 +20,6 @@ let appState = {
     products: [] // DOMContentLoaded aşamasında initProducts() ile doldurulacak
 };
 
-let categoryChart = null;
-
-
-
 // Ürünleri Güvenli Yükleme Fonksiyonu
 function initProducts() {
     try {
@@ -157,14 +153,6 @@ function setupPasswordToggle() {
     });
 }
 
-const CATEGORY_IMAGES = {
-    'Elektronik': 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=120&q=80',
-    'Ofis/Kırtasiye': 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=120&q=80',
-    'Giyim': 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=120&q=80',
-    'Ev/Yaşam': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=120&q=80',
-    'Diğer': 'https://images.unsplash.com/photo-1512909006721-3d6018887383?auto=format&fit=crop&w=120&q=80'
-};
-
 // ----------------------------------------------------
 // CRUD (ÜRETİM & ENVANTER YÖNETİMİ) MANTIĞI
 // ----------------------------------------------------
@@ -179,7 +167,6 @@ function setupCrudEvents() {
         
         const name = document.getElementById('prod-name').value.trim();
         const category = document.getElementById('prod-category').value;
-        const image = document.getElementById('prod-image').value.trim();
         const price = parseFloat(document.getElementById('prod-price').value);
         const stock = parseInt(document.getElementById('prod-stock').value);
         
@@ -187,7 +174,6 @@ function setupCrudEvents() {
             id: Date.now().toString(), // Benzersiz ID üretme
             name,
             category,
-            image: image || CATEGORY_IMAGES[category] || CATEGORY_IMAGES['Diğer'],
             price,
             stock,
             createdBy: appState.currentUser.name, // Ürünü ekleyen kullanıcı bilgisi
@@ -215,21 +201,13 @@ function setupCrudEvents() {
         const id = document.getElementById('edit-prod-id').value;
         const name = document.getElementById('edit-prod-name').value.trim();
         const category = document.getElementById('edit-prod-category').value;
-        const image = document.getElementById('edit-prod-image').value.trim();
         const price = parseFloat(document.getElementById('edit-prod-price').value);
         const stock = parseInt(document.getElementById('edit-prod-stock').value);
         
         // Ürünü listede bulup güncelleme
         appState.products = appState.products.map(prod => {
             if (prod.id === id) {
-                return { 
-                    ...prod, 
-                    name, 
-                    category, 
-                    image: image || CATEGORY_IMAGES[category] || CATEGORY_IMAGES['Diğer'], 
-                    price, 
-                    stock 
-                };
+                return { ...prod, name, category, price, stock };
             }
             return prod;
         });
@@ -251,9 +229,6 @@ function saveProducts() {
 
 // Ürünleri Listeleme / Tabloyu Güncelleme (Read)
 function renderProducts() {
-    // İstatistik ve grafikleri güncelle
-    updateStatsAndCharts();
-
     const tableBody = document.getElementById('product-table-body');
     const searchQuery = document.getElementById('search-input').value.toLowerCase();
     const categoryFilter = document.getElementById('filter-category').value;
@@ -285,24 +260,11 @@ function renderProducts() {
         // Ürünü yalnızca ekleyen kişi düzenleyebilir/silebilir
         const isOwner = prod.creatorEmail === appState.currentUser.email;
         
-        // Stok uyarı rozeti
-        const stockBadge = prod.stock <= 5 
-            ? `<span class="badge badge-danger">Kritik: ${prod.stock} adet</span>` 
-            : `<span class="badge badge-success">${prod.stock} adet</span>`;
-            
-        // Ürün görseli
-        const imgUrl = prod.image || CATEGORY_IMAGES[prod.category] || CATEGORY_IMAGES['Diğer'];
-        
         tr.innerHTML = `
-            <td>
-                <div class="product-cell-info">
-                    <img src="${escapeHtml(imgUrl)}" class="product-thumb" alt="${escapeHtml(prod.name)}">
-                    <strong>${escapeHtml(prod.name)}</strong>
-                </div>
-            </td>
+            <td><strong>${escapeHtml(prod.name)}</strong></td>
             <td>${escapeHtml(prod.category)}</td>
             <td>₺${prod.price.toFixed(2)}</td>
-            <td>${stockBadge}</td>
+            <td>${prod.stock} adet</td>
             <td><span class="text-muted">${escapeHtml(prod.createdBy)}</span></td>
             <td>
                 <div class="table-actions">
@@ -348,7 +310,6 @@ window.openEditModal = function(id) {
     document.getElementById('edit-prod-id').value = product.id;
     document.getElementById('edit-prod-name').value = product.name;
     document.getElementById('edit-prod-category').value = product.category;
-    document.getElementById('edit-prod-image').value = product.image && !product.image.startsWith('https://images.unsplash.com/') ? product.image : '';
     document.getElementById('edit-prod-price').value = product.price;
     document.getElementById('edit-prod-stock').value = product.stock;
     
@@ -366,8 +327,6 @@ function closeModal() {
 // ----------------------------------------------------
 function setupDataActions() {
     const exportBtn = document.getElementById('export-json-btn');
-    const exportCsvBtn = document.getElementById('export-csv-btn');
-    const exportPdfBtn = document.getElementById('export-pdf-btn');
     const importFile = document.getElementById('import-file');
     
     // Verileri JSON Olarak Dışa Aktar (Download)
@@ -377,56 +336,22 @@ function setupDataActions() {
             return;
         }
         
+        // JSON dizesini biçimlendirerek oluştur
         const dataStr = JSON.stringify(appState.products, null, 2);
+        
+        // İndirme işlemini tetiklemek için sanal bir indirme bağlantısı (link) kur
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         
         a.href = url;
-        a.download = `stok_envanteri_${Date.now()}.json`;
+        a.download = `stok_envanteri_${Date.now()}.json`; // Dosya adı şablonu
         document.body.appendChild(a);
         a.click();
         
+        // Temizlik işlemleri
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    });
-
-    // Excel (CSV) olarak dışa aktarma
-    exportCsvBtn.addEventListener('click', () => {
-        if (appState.products.length === 0) {
-            alert('Dışa aktarılacak hiç ürün verisi yok!');
-            return;
-        }
-
-        // CSV başlığı (Türkçe karakterlerin Excel'de düzgün açılması için UTF-8 BOM ekliyoruz)
-        let csvContent = "\uFEFF";
-        csvContent += "Ürün Adı,Kategori,Fiyat (TL),Stok Adedi,Ekleyen\n";
-
-        appState.products.forEach(p => {
-            // Değerlerin içinde virgül varsa tırnak içine alıyoruz
-            const name = p.name.includes(',') ? `"${p.name}"` : p.name;
-            const category = p.category.includes(',') ? `"${p.category}"` : p.category;
-            csvContent += `${name},${category},${p.price},${p.stock},${p.createdBy}\n`;
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `stok_raporu_${Date.now()}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
-
-    // PDF Raporu Yazdırma
-    exportPdfBtn.addEventListener('click', () => {
-        if (appState.products.length === 0) {
-            alert('Yazdırılacak hiç ürün verisi yok!');
-            return;
-        }
-        window.print();
     });
     
     // JSON Dosyası Yükleme (İçe Aktar)
@@ -439,7 +364,9 @@ function setupDataActions() {
             try {
                 const importedData = JSON.parse(evt.target.result);
                 
+                // Gelen verinin basit bir şema kontrolü
                 if (Array.isArray(importedData)) {
+                    // Mevcut ürün listesiyle birleştirme veya tamamen üzerine yazma seçeneği
                     if (confirm('İçe aktarılan ürünleri mevcut listenizin üzerine yazmak ister misiniz? (Hayır derseniz listenin sonuna eklenir)')) {
                         appState.products = importedData;
                     } else {
@@ -456,98 +383,10 @@ function setupDataActions() {
                 alert('Dosya okunurken bir hata oluştu: ' + err.message);
             }
             
+            // Aynı dosyayı tekrar yükleyebilmek için input alanını sıfırla
             importFile.value = '';
         };
         
         reader.readAsText(file);
-    });
-}
-
-// ----------------------------------------------------
-// İSTATİSTİK KARTLARI VE GRAFİKLERİ GÜNCELLEME MANTIĞI
-// ----------------------------------------------------
-function updateStatsAndCharts() {
-    // 1. İstatistikleri Hesapla
-    const totalProducts = appState.products.length;
-    const totalValue = appState.products.reduce((sum, p) => sum + (p.price * p.stock), 0);
-    const criticalStock = appState.products.filter(p => p.stock <= 5).length;
-    
-    const uniqueCategories = [...new Set(appState.products.map(p => p.category))];
-    const categoryCount = uniqueCategories.length;
-    
-    // DOM Güncellemeleri
-    const totalProductsEl = document.getElementById('stat-total-products');
-    const totalValueEl = document.getElementById('stat-total-value');
-    const criticalStockEl = document.getElementById('stat-critical-stock');
-    const categoriesEl = document.getElementById('stat-categories');
-    
-    if (totalProductsEl) totalProductsEl.textContent = totalProducts;
-    if (totalValueEl) totalValueEl.textContent = `₺${totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    if (criticalStockEl) {
-        criticalStockEl.textContent = criticalStock;
-        const parentCard = criticalStockEl.closest('.stat-card');
-        if (criticalStock > 0) {
-            parentCard.classList.add('text-danger');
-        } else {
-            parentCard.classList.remove('text-danger');
-        }
-    }
-    if (categoriesEl) categoriesEl.textContent = categoryCount;
-    
-    // 2. Chart.js Kategori Dağılım Grafiğini Güncelle
-    const chartCanvas = document.getElementById('categoryChart');
-    if (!chartCanvas) return;
-    
-    // Kategori verilerini topla
-    const catData = {};
-    appState.products.forEach(p => {
-        catData[p.category] = (catData[p.category] || 0) + p.stock;
-    });
-    
-    const labels = Object.keys(catData);
-    const data = Object.values(catData);
-    
-    if (categoryChart) {
-        categoryChart.destroy();
-    }
-    
-    if (labels.length === 0) {
-        return;
-    }
-    
-    categoryChart = new Chart(chartCanvas, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: [
-                    '#6366f1', // Indigo
-                    '#a855f7', // Purple
-                    '#3b82f6', // Blue
-                    '#10b981', // Emerald
-                    '#f59e0b', // Amber
-                    '#ec4899'  // Pink
-                ],
-                borderWidth: 2,
-                borderColor: '#1e293b' // Card background color
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        color: '#94a3b8',
-                        font: {
-                            family: 'Inter',
-                            size: 11
-                        }
-                    }
-                }
-            }
-        }
     });
 }
