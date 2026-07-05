@@ -544,3 +544,200 @@ body {
         flex: 1;
     }
 }
+
+/* ----------------------------------------------------
+   4. YENİ ÖZELLİKLER (İSTATİSTİK, GRAFİK, GÖRSEL VE BİLDİRİM)
+   ---------------------------------------------------- */
+
+/* İstatistik Kartları Grid Yapısı */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.stat-icon {
+    font-size: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-sm);
+}
+
+.warning-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); color: var(--color-danger); }
+    100% { transform: scale(1); }
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Grafik Alanı */
+.analytics-section {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.analytics-section h3 {
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-height: 260px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Tablo İçi Ürün Resmi ve Hizalama */
+.product-cell-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.product-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+}
+
+/* Kritik Stok Uyarı Rozeti */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.badge-danger {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--color-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+/* PDF Raporu için Yazdırma Stilleri */
+@media print {
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    .auth-wrapper, 
+    .form-sidebar, 
+    .control-bar, 
+    .modal-wrapper,
+    .analytics-section,
+    .header-user,
+    .product-table th:last-child,
+    .product-table td:last-child {
+        display: none !important;
+    }
+    
+    .app-wrapper {
+        display: block !important;
+    }
+
+    .app-container {
+        display: block !important;
+        padding: 0 !important;
+    }
+
+    .list-content {
+        width: 100% !important;
+    }
+
+    .card, .table-container {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+    .product-table {
+        color: black !important;
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+
+    .product-table th, .product-table td {
+        border: 1px solid #ddd !important;
+        color: black !important;
+        padding: 8px !important;
+    }
+    
+    .product-thumb {
+        border: 1px solid #ccc !important;
+    }
+    
+    .welcome-text, .logo-icon {
+        display: none !important;
+    }
+    
+    .app-header {
+        border-bottom: 2px solid black !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .header-logo h1 {
+        -webkit-text-fill-color: black !important;
+        color: black !important;
+    }
+}
+

@@ -13,6 +13,8 @@
         rel="stylesheet">
     <!-- CSS Dosyası -->
     <link rel="stylesheet" href="style.css">
+    <!-- Chart.js Grafikler için -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -86,6 +88,10 @@
                             <option value="Diğer">Diğer</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="prod-image">Ürün Görsel URL'i</label>
+                        <input type="url" id="prod-image" placeholder="Örn: https://images.unsplash.com/photo-...">
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="prod-price">Fiyat (₺)</label>
@@ -102,6 +108,46 @@
 
             <!-- Sağ Sütun: Liste ve Araçlar -->
             <main class="list-content">
+                <!-- Özet İstatistik Kartları -->
+                <div class="stats-grid">
+                    <div class="stat-card card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Toplam Ürün</span>
+                            <strong class="stat-value" id="stat-total-products">0</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Toplam Değer</span>
+                            <strong class="stat-value" id="stat-total-value">₺0.00</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card card text-danger">
+                        <div class="stat-icon warning-icon">⚠️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Kritik Stok (≤5)</span>
+                            <strong class="stat-value" id="stat-critical-stock">0</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-icon">📁</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Kategoriler</span>
+                            <strong class="stat-value" id="stat-categories">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grafik Alanı -->
+                <div class="analytics-section card">
+                    <h3>Kategori Dağılım Analizi</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
                 <!-- Filtreler ve Veri Dışa/İçe Aktarma Çubuğu -->
                 <div class="control-bar card">
                     <div class="search-box">
@@ -121,6 +167,10 @@
                         <!-- Dışa aktar butonu -->
                         <button class="btn btn-secondary btn-sm" id="export-json-btn"
                             title="Verileri JSON dosyası olarak indir">Veriyi Çek (JSON)</button>
+                        <button class="btn btn-secondary btn-sm" id="export-csv-btn"
+                            title="Verileri Excel/CSV olarak indir">Excel (CSV)</button>
+                        <button class="btn btn-secondary btn-sm" id="export-pdf-btn"
+                            title="Stok listesini yazdır / PDF kaydet">PDF Raporu</button>
                         <!-- İçe aktar butonu ve gizli input dosyası -->
                         <label for="import-file" class="btn btn-secondary btn-sm"
                             title="JSON dosyası yükleyerek veriyi içe aktar">Veri Yükle</label>
@@ -174,6 +224,10 @@
                         <option value="Ev/Yaşam">Ev/Yaşam</option>
                         <option value="Diğer">Diğer</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-prod-image">Ürün Görsel URL'i</label>
+                    <input type="url" id="edit-prod-image" placeholder="Örn: https://images.unsplash.com/photo-...">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
