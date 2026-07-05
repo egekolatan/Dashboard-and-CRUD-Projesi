@@ -1293,3 +1293,94 @@ body {
         max-height: 200px;
     }
 }
+
+/* ----------------------------------------------------
+   PREMIUM GLASSMORPHISM & GLOW OVERRIDES
+   ---------------------------------------------------- */
+
+/* Body Background Glows */
+body {
+    background-color: var(--bg-app);
+    background-image: 
+        radial-gradient(circle at 5% 5%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 95% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+}
+
+/* Frosted Glass Cards */
+.card-panel, .dashboard-card, .stat-card {
+    background: rgba(21, 32, 53, 0.5) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-theme="light"] .card-panel, 
+[data-theme="light"] .dashboard-card, 
+[data-theme="light"] .stat-card {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Stats Cards Soft Hover Glow */
+.stat-card {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    border-color: rgba(var(--accent-rgb), 0.3) !important;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 
+                0 0 30px 0 rgba(var(--accent-rgb), 0.1) !important;
+}
+
+/* Sidebar Styling Upgrade */
+.sidebar {
+    background: rgba(15, 22, 38, 0.8) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+[data-theme="light"] .sidebar {
+    background: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Active Nav Items Glow */
+.nav-item.active {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(168, 85, 247, 0.15)) !important;
+    color: var(--text-primary) !important;
+    border-left: 3px solid var(--accent-color);
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(168, 85, 247, 0.08));
+    opacity: 0;
+    transition: var(--transition-fast);
+    z-index: -1;
+}
+
+.nav-item:hover::before {
+    opacity: 1;
+}
+
+/* Premium Header styling */
+.main-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Form inputs focus state */
+.dashboard-form input:focus, 
+.dashboard-form select:focus, 
+.dashboard-form textarea:focus {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15) !important;
+}
