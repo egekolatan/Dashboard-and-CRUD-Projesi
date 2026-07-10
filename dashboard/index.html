@@ -261,28 +261,56 @@
                         </div>
 
                         <div class="dashboard-card quick-widgets-card">
-                            <div class="quick-widget ai-chat-widget" id="ai-chat-container" style="display: flex; flex-direction: column; gap: 0.75rem; transition: all 0.3s ease; border-radius: var(--radius-md); padding: 0.25rem;">
+                            <div class="quick-widget currency-converter-widget" id="converter-container" style="display: flex; flex-direction: column; gap: 0.75rem; transition: all 0.3s ease; border-radius: var(--radius-md); padding: 0.25rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">✨</span>
-                                        <h3 style="margin: 0;">NovaAI Asistanı</h3>
+                                        <span style="font-size: 1.25rem;">💱</span>
+                                        <h3 style="margin: 0;">Döviz & Kripto Çevirici</h3>
                                     </div>
-                                    <span class="ai-status-badge" id="ai-status-mode" style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 20px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 500;">
-                                        Yükleniyor...
+                                    <span class="converter-status-badge" id="converter-status" style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 500;">
+                                        Canlı Kurlar
                                     </span>
                                 </div>
 
-                                <!-- Mesaj Geçmişi Alanı -->
-                                <div id="ai-chat-messages" style="height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.65rem; padding: 0.5rem; background: rgba(0, 0, 0, 0.15); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                                    <div class="ai-message assistant" style="align-self: flex-start; max-width: 85%; background: var(--border-color); color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 2px; font-size: 0.85rem; line-height: 1.4;">
-                                        Merhaba! Ben NovaAI. Size projeniz, bütçeniz veya diğer konularda nasıl yardımcı olabilirim?
+                                <div class="converter-form" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                                    <!-- Amount input -->
+                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Miktar</label>
+                                        <input type="number" id="converter-amount" value="100" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem 0.75rem; color: var(--text-primary); font-size: 0.9rem; outline: none; width: 100%;" />
                                     </div>
-                                </div>
 
-                                <!-- Mesaj Giriş Alanı -->
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <input type="text" id="ai-chat-input" placeholder="Bir şey sorun..." style="flex-grow: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem 0.75rem; color: var(--text-primary); font-size: 0.85rem; outline: none; transition: border-color 0.2s;" />
-                                    <button type="button" id="ai-chat-send" style="background: var(--accent-color); color: #fff; border: none; border-radius: var(--radius-md); padding: 0 0.85rem; cursor: pointer; transition: opacity 0.2s; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;" title="Gönder">🚀</button>
+                                    <!-- Currency selectors & swap button -->
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <label style="font-size: 0.75rem; color: var(--text-secondary);">Kaynak</label>
+                                            <select id="converter-from" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; color: var(--text-primary); font-size: 0.85rem; outline: none;">
+                                                <option value="USD">USD ($)</option>
+                                                <option value="EUR">EUR (€)</option>
+                                                <option value="BTC">BTC (₿)</option>
+                                                <option value="ETH">ETH (Ξ)</option>
+                                                <option value="TRY" selected>TRY (₺)</option>
+                                            </select>
+                                        </div>
+
+                                        <button type="button" id="converter-swap" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-primary); margin-top: 1rem; transition: background 0.2s;" title="Ters Çevir">🔁</button>
+
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <label style="font-size: 0.75rem; color: var(--text-secondary);">Hedef</label>
+                                            <select id="converter-to" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; color: var(--text-primary); font-size: 0.85rem; outline: none;">
+                                                <option value="USD" selected>USD ($)</option>
+                                                <option value="EUR">EUR (€)</option>
+                                                <option value="BTC">BTC (₿)</option>
+                                                <option value="ETH">ETH (Ξ)</option>
+                                                <option value="TRY">TRY (₺)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Result Field -->
+                                    <div class="converter-result-box" style="margin-top: 0.4rem; background: rgba(0, 0, 0, 0.15); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 0.6rem; text-align: center;">
+                                        <div id="converter-rate-info" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem;">1 TRY = 0.029 USD</div>
+                                        <div id="converter-result-value" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-color);">2.90 USD</div>
+                                    </div>
                                 </div>
                             </div>
                             <hr class="card-divider">

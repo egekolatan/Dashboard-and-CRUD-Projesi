@@ -362,120 +362,91 @@ function updatePerformanceChartColors() {
 // OVERVIEW PANEL (WIDGETS & STATS)
 // ----------------------------------------------------
 function initOverviewPanel() {
-    const aiChatMessages = document.getElementById('ai-chat-messages');
-    const aiChatInput = document.getElementById('ai-chat-input');
-    const aiChatSend = document.getElementById('ai-chat-send');
-    const aiStatusMode = document.getElementById('ai-status-mode');
-    
-    let chatHistory = []; // { role: 'user' | 'assistant', text: '...' }
+    const amountInput = document.getElementById('converter-amount');
+    const fromSelect = document.getElementById('converter-from');
+    const toSelect = document.getElementById('converter-to');
+    const swapBtn = document.getElementById('converter-swap');
+    const rateInfo = document.getElementById('converter-rate-info');
+    const resultValue = document.getElementById('converter-result-value');
+    const statusBadge = document.getElementById('converter-status');
 
-    async function checkAiStatus() {
-        if (!aiStatusMode) return;
+    let rates = {
+        USD: 1,
+        TRY: 32.8,
+        EUR: 0.92,
+        BTC: 0.000015,
+        ETH: 0.0003
+    };
+
+    async function loadRates() {
+        if (statusBadge) statusBadge.textContent = 'Güncelleniyor...';
         try {
-            aiStatusMode.textContent = 'Bağlanıyor...';
-            // Ping to find out whether Gemini API Key is available or if we are in Demo mode
-            const res = await apiFetch('/api/ai/chat', {
-                method: 'POST',
-                body: JSON.stringify({ message: 'merhaba', history: [] })
-            });
+            const response = await fetch('https://open.er-api.com/v6/latest/USD');
+            if (!response.ok) throw new Error('API hatası');
+            const data = await response.json();
             
-            // Set the first message automatically based on whether it is demo or not
-            if (aiChatMessages) {
-                aiChatMessages.innerHTML = '';
-                appendMessage('assistant', res.response);
-                chatHistory.push({ role: 'assistant', text: res.response });
-            }
-
-            if (res.isDemo) {
-                aiStatusMode.textContent = 'Demo Modu';
-                aiStatusMode.style.background = 'rgba(245, 158, 11, 0.15)';
-                aiStatusMode.style.color = '#fbbf24';
-                aiStatusMode.style.borderColor = 'rgba(245, 158, 11, 0.3)';
-                aiStatusMode.title = 'GEMINI_API_KEY tanımlı olmadığı için çevrimdışı akıllı yanıt modu devrede.';
-            } else {
-                aiStatusMode.textContent = 'Gemini AI';
-                aiStatusMode.style.background = 'rgba(16, 185, 129, 0.15)';
-                aiStatusMode.style.color = '#34d399';
-                aiStatusMode.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            if (data && data.rates) {
+                rates = {
+                    USD: 1,
+                    TRY: data.rates.TRY || 32.8,
+                    EUR: data.rates.EUR || 0.92,
+                    BTC: data.rates.BTC || 0.000015,
+                    ETH: data.rates.ETH || 0.0003
+                };
+                if (statusBadge) {
+                    statusBadge.textContent = 'Canlı Kurlar';
+                    statusBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+                    statusBadge.style.color = '#34d399';
+                    statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                }
             }
         } catch (e) {
-            aiStatusMode.textContent = 'Bağlantı Yok';
-            aiStatusMode.style.background = 'rgba(239, 68, 68, 0.15)';
-            aiStatusMode.style.color = '#f87171';
-            aiStatusMode.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            console.warn('Canlı kurlar yüklenemedi, yerel veriler kullanılacak.', e);
+            if (statusBadge) {
+                statusBadge.textContent = 'Çevrimdışı';
+                statusBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+                statusBadge.style.color = '#fbbf24';
+                statusBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+            }
         }
+        calculate();
     }
-    checkAiStatus();
 
-    function appendMessage(role, text) {
-        if (!aiChatMessages) return;
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `ai-message ${role}`;
+    function calculate() {
+        if (!amountInput || !fromSelect || !toSelect || !resultValue || !rateInfo) return;
         
-        // Escape HTML tags to prevent XSS but format simple markdown/bolding
-        let formattedText = text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\n/g, '<br>');
+        const amount = parseFloat(amountInput.value) || 0;
+        const from = fromSelect.value;
+        const to = toSelect.value;
 
-        msgDiv.innerHTML = formattedText;
-        aiChatMessages.appendChild(msgDiv);
-        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        // Convert to USD first, then to target currency
+        const amountInUSD = amount / rates[from];
+        const result = amountInUSD * rates[to];
+        const rateForOne = (1 / rates[from]) * rates[to];
+
+        let decimals = 2;
+        if (to === 'BTC' || to === 'ETH') decimals = 6;
+        else if (result < 0.1 && result > 0) decimals = 4;
+
+        resultValue.textContent = `${result.toLocaleString('tr-TR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ${to}`;
+        rateInfo.textContent = `1 ${from} = ${rateForOne.toLocaleString('tr-TR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ${to}`;
     }
 
-    async function handleSend() {
-        if (!aiChatInput || !aiChatSend) return;
-        const text = aiChatInput.value.trim();
-        if (!text) return;
-
-        aiChatInput.value = '';
-        appendMessage('user', text);
-
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'ai-message loading';
-        loadingDiv.textContent = 'Düşünüyor...';
-        aiChatMessages.appendChild(loadingDiv);
-        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-
-        try {
-            const data = await apiFetch('/api/ai/chat', {
-                method: 'POST',
-                body: JSON.stringify({
-                    message: text,
-                    history: chatHistory
-                })
-            });
-
-            loadingDiv.remove();
-
-            if (data && data.response) {
-                appendMessage('assistant', data.response);
-                chatHistory.push({ role: 'user', text: text });
-                chatHistory.push({ role: 'assistant', text: data.response });
-                if (chatHistory.length > 20) {
-                    chatHistory = chatHistory.slice(-20);
-                }
-            } else {
-                appendMessage('assistant', 'Hata: Boş yanıt alındı.');
-            }
-        } catch (error) {
-            loadingDiv.remove();
-            appendMessage('assistant', `Bağlantı hatası: ${error.message || 'Sunucu yanıt vermedi.'}`);
-        }
-    }
-
-    if (aiChatSend && aiChatInput) {
-        aiChatSend.addEventListener('click', handleSend);
-        aiChatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSend();
-            }
+    if (amountInput) amountInput.addEventListener('input', calculate);
+    if (fromSelect) fromSelect.addEventListener('change', calculate);
+    if (toSelect) toSelect.addEventListener('change', calculate);
+    
+    if (swapBtn) {
+        swapBtn.addEventListener('click', () => {
+            const temp = fromSelect.value;
+            fromSelect.value = toSelect.value;
+            toSelect.value = temp;
+            calculate();
         });
     }
 
+    loadRates();
+    
     // Update stats values initially
     updateOverviewStats();
 }

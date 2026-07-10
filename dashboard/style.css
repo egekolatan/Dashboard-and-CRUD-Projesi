@@ -591,68 +591,34 @@ body {
     font-weight: 600;
 }
 
-/* AI Chat Specifics */
-.ai-chat-widget #ai-chat-messages {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.1) transparent;
+/* Currency Converter Styles */
+.currency-converter-widget select,
+.currency-converter-widget input {
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.ai-chat-widget #ai-chat-messages::-webkit-scrollbar {
-    width: 4px;
+.currency-converter-widget select:focus,
+.currency-converter-widget input:focus {
+    border-color: var(--accent-color) !important;
 }
 
-.ai-chat-widget #ai-chat-messages::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
+.currency-converter-widget #converter-swap:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    transform: scale(1.05);
 }
 
-.ai-message {
-    max-width: 85%;
-    padding: 0.55rem 0.8rem;
-    border-radius: var(--radius-md);
-    font-size: 0.85rem;
-    line-height: 1.4;
-    word-break: break-word;
-    animation: fadeInMsg 0.2s ease-out;
+.currency-converter-widget #converter-swap:active {
+    transform: scale(0.95);
 }
 
-.ai-message.assistant {
-    align-self: flex-start;
-    background: rgba(255, 255, 255, 0.07);
+[data-theme="light"] .currency-converter-widget select,
+[data-theme="light"] .currency-converter-widget input {
+    background-color: rgba(0, 0, 0, 0.03) !important;
     color: var(--text-primary);
-    border-bottom-left-radius: 2px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="light"] .ai-message.assistant {
-    background: rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.ai-message.user {
-    align-self: flex-end;
-    background: var(--accent-color);
-    color: #ffffff;
-    border-bottom-right-radius: 2px;
-}
-
-.ai-message.loading {
-    align-self: flex-start;
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text-muted);
-    font-style: italic;
-    border-bottom-left-radius: 2px;
-}
-
-@keyframes fadeInMsg {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+[data-theme="light"] .currency-converter-widget .converter-result-box {
+    background-color: rgba(0, 0, 0, 0.02) !important;
 }
 
 .card-divider {
