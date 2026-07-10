@@ -362,130 +362,120 @@ function updatePerformanceChartColors() {
 // OVERVIEW PANEL (WIDGETS & STATS)
 // ----------------------------------------------------
 function initOverviewPanel() {
-    // Quick Note Auto-save jotter
-    const quickNoteArea = document.getElementById('quick-note-textarea');
-    const quickNoteStatus = document.getElementById('quick-note-status');
-    const quickNoteContainer = document.getElementById('quick-note-container');
-    const quickNoteStats = document.getElementById('quick-note-stats');
-    const sizeSelector = document.getElementById('quick-note-size');
-    const copyBtn = document.getElementById('quick-note-copy');
-    const clearBtn = document.getElementById('quick-note-clear');
-    const colorBtns = document.querySelectorAll('.quick-note-color-btn');
+    const aiChatMessages = document.getElementById('ai-chat-messages');
+    const aiChatInput = document.getElementById('ai-chat-input');
+    const aiChatSend = document.getElementById('ai-chat-send');
+    const aiStatusMode = document.getElementById('ai-status-mode');
     
-    // 1. Initial State Loading
-    if (quickNoteArea) {
-        quickNoteArea.value = state.quickNote || '';
-        quickNoteArea.style.fontSize = state.noteSize || '15px';
-    }
-    
-    if (sizeSelector) {
-        sizeSelector.value = state.noteSize || '15px';
-    }
-    
-    if (quickNoteContainer && state.noteBg) {
-        quickNoteContainer.style.background = state.noteBg;
-        quickNoteContainer.style.borderColor = state.noteBg !== 'rgba(244, 180, 26, 0.0)' ? 'rgba(255,255,255,0.08)' : '';
-    }
-    
-    // Live stats counter helper
-    function updateNoteStats() {
-        if (!quickNoteArea || !quickNoteStats) return;
-        const text = quickNoteArea.value;
-        const charCount = text.length;
-        const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-        quickNoteStats.textContent = `${charCount} karakter | ${wordCount} kelime`;
-    }
-    updateNoteStats();
+    let chatHistory = []; // { role: 'user' | 'assistant', text: '...' }
 
-    // 2. Sizing Action
-    if (sizeSelector && quickNoteArea) {
-        sizeSelector.addEventListener('change', () => {
-            state.noteSize = sizeSelector.value;
-            saveState(KEYS.NOTE_SIZE, state.noteSize);
-            quickNoteArea.style.fontSize = state.noteSize;
-        });
-    }
-
-    // 3. Coloring Action
-    colorBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const bg = btn.dataset.bg;
-            state.noteBg = bg;
-            saveState(KEYS.NOTE_BG, bg);
-            if (quickNoteContainer) {
-                quickNoteContainer.style.background = bg;
-                // Add soft border styling to highlight customization
-                if (bg && bg !== 'rgba(244, 180, 26, 0.0)') {
-                    quickNoteContainer.style.border = `1px solid ${btn.dataset.color || 'var(--border-color)'}`;
-                } else {
-                    quickNoteContainer.style.border = '';
-                }
-            }
-        });
-    });
-
-    // 4. Copy to Clipboard
-    if (copyBtn && quickNoteArea) {
-        copyBtn.addEventListener('click', () => {
-            if (quickNoteArea.value.trim() === '') {
-                quickNoteStatus.textContent = 'Kopyalanacak metin yok';
-                quickNoteStatus.classList.add('visible');
-                setTimeout(() => quickNoteStatus.classList.remove('visible'), 1000);
-                return;
-            }
-            navigator.clipboard.writeText(quickNoteArea.value).then(() => {
-                quickNoteStatus.textContent = '📋 Kopyalandı!';
-                quickNoteStatus.classList.add('visible');
-                setTimeout(() => {
-                    quickNoteStatus.classList.remove('visible');
-                    quickNoteStatus.textContent = 'Kaydedildi';
-                }, 1200);
+    async function checkAiStatus() {
+        if (!aiStatusMode) return;
+        try {
+            aiStatusMode.textContent = 'Bağlanıyor...';
+            // Ping to find out whether Gemini API Key is available or if we are in Demo mode
+            const res = await apiFetch('/api/ai/chat', {
+                method: 'POST',
+                body: JSON.stringify({ message: 'merhaba', history: [] })
             });
-        });
-    }
-
-    // 5. Clear text
-    if (clearBtn && quickNoteArea) {
-        clearBtn.addEventListener('click', () => {
-            if (confirm('Not alanını temizlemek istediğinizden emin misiniz?')) {
-                quickNoteArea.value = '';
-                state.quickNote = '';
-                saveState(KEYS.QUICK_NOTE, '');
-                updateNoteStats();
-                quickNoteStatus.textContent = 'Temizlendi';
-                quickNoteStatus.classList.add('visible');
-                setTimeout(() => {
-                    quickNoteStatus.classList.remove('visible');
-                    quickNoteStatus.textContent = 'Kaydedildi';
-                }, 1000);
-            }
-        });
-    }
-
-    // 6. Typing Debounce and Save
-    let debounceTimer;
-    if (quickNoteArea) {
-        quickNoteArea.addEventListener('input', () => {
-            updateNoteStats();
-            if (quickNoteStatus) {
-                quickNoteStatus.textContent = 'Kaydediliyor...';
-                quickNoteStatus.classList.add('visible');
-            }
             
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                state.quickNote = quickNoteArea.value;
-                saveState(KEYS.QUICK_NOTE, state.quickNote);
-                if (quickNoteStatus) {
-                    quickNoteStatus.textContent = 'Kaydedildi';
-                    setTimeout(() => {
-                        quickNoteStatus.classList.remove('visible');
-                    }, 1000);
+            // Set the first message automatically based on whether it is demo or not
+            if (aiChatMessages) {
+                aiChatMessages.innerHTML = '';
+                appendMessage('assistant', res.response);
+                chatHistory.push({ role: 'assistant', text: res.response });
+            }
+
+            if (res.isDemo) {
+                aiStatusMode.textContent = 'Demo Modu';
+                aiStatusMode.style.background = 'rgba(245, 158, 11, 0.15)';
+                aiStatusMode.style.color = '#fbbf24';
+                aiStatusMode.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                aiStatusMode.title = 'GEMINI_API_KEY tanımlı olmadığı için çevrimdışı akıllı yanıt modu devrede.';
+            } else {
+                aiStatusMode.textContent = 'Gemini AI';
+                aiStatusMode.style.background = 'rgba(16, 185, 129, 0.15)';
+                aiStatusMode.style.color = '#34d399';
+                aiStatusMode.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            }
+        } catch (e) {
+            aiStatusMode.textContent = 'Bağlantı Yok';
+            aiStatusMode.style.background = 'rgba(239, 68, 68, 0.15)';
+            aiStatusMode.style.color = '#f87171';
+            aiStatusMode.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        }
+    }
+    checkAiStatus();
+
+    function appendMessage(role, text) {
+        if (!aiChatMessages) return;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `ai-message ${role}`;
+        
+        // Escape HTML tags to prevent XSS but format simple markdown/bolding
+        let formattedText = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+
+        msgDiv.innerHTML = formattedText;
+        aiChatMessages.appendChild(msgDiv);
+        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+    }
+
+    async function handleSend() {
+        if (!aiChatInput || !aiChatSend) return;
+        const text = aiChatInput.value.trim();
+        if (!text) return;
+
+        aiChatInput.value = '';
+        appendMessage('user', text);
+
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'ai-message loading';
+        loadingDiv.textContent = 'Düşünüyor...';
+        aiChatMessages.appendChild(loadingDiv);
+        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+
+        try {
+            const data = await apiFetch('/api/ai/chat', {
+                method: 'POST',
+                body: JSON.stringify({
+                    message: text,
+                    history: chatHistory
+                })
+            });
+
+            loadingDiv.remove();
+
+            if (data && data.response) {
+                appendMessage('assistant', data.response);
+                chatHistory.push({ role: 'user', text: text });
+                chatHistory.push({ role: 'assistant', text: data.response });
+                if (chatHistory.length > 20) {
+                    chatHistory = chatHistory.slice(-20);
                 }
-            }, 800);
+            } else {
+                appendMessage('assistant', 'Hata: Boş yanıt alındı.');
+            }
+        } catch (error) {
+            loadingDiv.remove();
+            appendMessage('assistant', `Bağlantı hatası: ${error.message || 'Sunucu yanıt vermedi.'}`);
+        }
+    }
+
+    if (aiChatSend && aiChatInput) {
+        aiChatSend.addEventListener('click', handleSend);
+        aiChatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
         });
     }
-    
+
     // Update stats values initially
     updateOverviewStats();
 }

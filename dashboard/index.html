@@ -261,39 +261,28 @@
                         </div>
 
                         <div class="dashboard-card quick-widgets-card">
-                            <div class="quick-widget" id="quick-note-container" style="display: flex; flex-direction: column; gap: 0.75rem; transition: all 0.3s ease; border-radius: var(--radius-md); padding: 0.25rem;">
+                            <div class="quick-widget ai-chat-widget" id="ai-chat-container" style="display: flex; flex-direction: column; gap: 0.75rem; transition: all 0.3s ease; border-radius: var(--radius-md); padding: 0.25rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <h3>Hızlı Not Al</h3>
-                                    <!-- Yapışkan Not Renk Seçenekleri -->
-                                    <div class="note-color-picker" style="display: flex; gap: 0.4rem; align-items: center;">
-                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(254, 240, 138, 0.12)" data-color="#fde047" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #fef08a; cursor: pointer;" title="Sarı"></button>
-                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(191, 219, 254, 0.12)" data-color="#60a5fa" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #bfdbfe; cursor: pointer;" title="Mavi"></button>
-                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(187, 247, 208, 0.12)" data-color="#4ade80" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #bbf7d0; cursor: pointer;" title="Yeşil"></button>
-                                        <button type="button" class="quick-note-color-btn" data-bg="rgba(244, 180, 26, 0.0)" data-color="" style="width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid transparent; background-color: #ffffff; cursor: pointer;" title="Varsayılan"></button>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="font-size: 1.25rem;">✨</span>
+                                        <h3 style="margin: 0;">NovaAI Asistanı</h3>
                                     </div>
-                                </div>
-                                
-                                <!-- Araç Çubuğu -->
-                                <div style="display: flex; gap: 0.5rem; align-items: center; background: rgba(0,0,0,0.15); padding: 0.35rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                                    <!-- Yazı Boyutu Ayarı -->
-                                    <select id="quick-note-size" style="background: none; border: none; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; outline: none;">
-                                        <option value="13px" style="background: var(--bg-card); color: var(--text-primary);">Küçük Yazı</option>
-                                        <option value="15px" style="background: var(--bg-card); color: var(--text-primary);" selected>Normal Yazı</option>
-                                        <option value="18px" style="background: var(--bg-card); color: var(--text-primary);">Büyük Yazı</option>
-                                    </select>
-                                    <div style="flex-grow: 1;"></div>
-                                    <!-- Kopyala Butonu -->
-                                    <button type="button" id="quick-note-copy" class="btn-icon" style="font-size: 0.8rem; background: none; border: none; cursor: pointer;" title="Kopyala">📋</button>
-                                    <!-- Temizle Butonu -->
-                                    <button type="button" id="quick-note-clear" class="btn-icon" style="font-size: 0.8rem; background: none; border: none; cursor: pointer;" title="Temizle">🗑️</button>
+                                    <span class="ai-status-badge" id="ai-status-mode" style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 20px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-weight: 500;">
+                                        Yükleniyor...
+                                    </span>
                                 </div>
 
-                                <textarea id="quick-note-textarea" placeholder="Aklınızdakileri buraya yazın, otomatik kaydedilir..." style="height: 180px; resize: vertical; font-size: 15px;"></textarea>
-                                
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <!-- Sayaç Bilgileri -->
-                                    <span id="quick-note-stats" style="font-size: 0.7rem; color: var(--text-muted);">0 karakter | 0 kelime</span>
-                                    <span class="save-status" id="quick-note-status">Kaydedildi</span>
+                                <!-- Mesaj Geçmişi Alanı -->
+                                <div id="ai-chat-messages" style="height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.65rem; padding: 0.5rem; background: rgba(0, 0, 0, 0.15); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                    <div class="ai-message assistant" style="align-self: flex-start; max-width: 85%; background: var(--border-color); color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 2px; font-size: 0.85rem; line-height: 1.4;">
+                                        Merhaba! Ben NovaAI. Size projeniz, bütçeniz veya diğer konularda nasıl yardımcı olabilirim?
+                                    </div>
+                                </div>
+
+                                <!-- Mesaj Giriş Alanı -->
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="ai-chat-input" placeholder="Bir şey sorun..." style="flex-grow: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem 0.75rem; color: var(--text-primary); font-size: 0.85rem; outline: none; transition: border-color 0.2s;" />
+                                    <button type="button" id="ai-chat-send" style="background: var(--accent-color); color: #fff; border: none; border-radius: var(--radius-md); padding: 0 0.85rem; cursor: pointer; transition: opacity 0.2s; font-size: 0.95rem; display: flex; align-items: center; justify-content: center;" title="Gönder">🚀</button>
                                 </div>
                             </div>
                             <hr class="card-divider">

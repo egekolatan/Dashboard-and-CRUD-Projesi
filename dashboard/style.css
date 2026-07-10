@@ -591,39 +591,68 @@ body {
     font-weight: 600;
 }
 
-.quick-widget textarea {
-    width: 100%;
-    height: 100px;
-    background-color: rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--border-color);
+/* AI Chat Specifics */
+.ai-chat-widget #ai-chat-messages {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.ai-chat-widget #ai-chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ai-chat-widget #ai-chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+.ai-message {
+    max-width: 85%;
+    padding: 0.55rem 0.8rem;
     border-radius: var(--radius-md);
-    padding: 0.75rem;
-    color: var(--text-primary);
-    resize: none;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1.4;
-    outline: none;
-    transition: border-color var(--transition-fast);
+    word-break: break-word;
+    animation: fadeInMsg 0.2s ease-out;
 }
 
-[data-theme="light"] .quick-widget textarea {
-    background-color: rgba(0, 0, 0, 0.02);
+.ai-message.assistant {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-primary);
+    border-bottom-left-radius: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.quick-widget textarea:focus {
-    border-color: var(--accent-color);
+[data-theme="light"] .ai-message.assistant {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.save-status {
-    font-size: 0.75rem;
-    color: #10b981;
+.ai-message.user {
     align-self: flex-end;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
+    background: var(--accent-color);
+    color: #ffffff;
+    border-bottom-right-radius: 2px;
 }
 
-.save-status.visible {
-    opacity: 1;
+.ai-message.loading {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-muted);
+    font-style: italic;
+    border-bottom-left-radius: 2px;
+}
+
+@keyframes fadeInMsg {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .card-divider {
