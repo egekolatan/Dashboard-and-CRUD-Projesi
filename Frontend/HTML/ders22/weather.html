@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1 id="city">Yükleniyor...</h1>
+    <p id="temp">Yükleniyor...</p>
+
+
+
+
+
+    <script>
+        const API_KEY = "28c43502b67ebdfcd30e6eab3aaadab8";
+        const SEHIR = "İzmir";
+        const URL = `https://api.openweathermap.org/data/2.5/weather?q=${SEHIR}&appid=${API_KEY}&units=metric&lang=tr`;
+
+        fetch(URL)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Hava durumu bilgisi alınamadı.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById("city").textContent = `${data.name}, ${data.sys.country}`;
+                document.getElementById("temp").textContent = `${Math.round(data.main.temp)}°C - ${data.weather[0].description}`;
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById("city").textContent = "Hata!";
+                document.getElementById("temp").textContent = "Hava durumu verisi yüklenirken bir sorun oluştu.";
+            });
+
+
+    </script>
+</body>
+
+</html>
