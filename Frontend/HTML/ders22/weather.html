@@ -10,6 +10,7 @@
 <body>
     <h1 id="city">Yükleniyor...</h1>
     <p id="temp">Yükleniyor...</p>
+    <p id="description">Yükleniyor...</p>
 
 
 
@@ -29,12 +30,14 @@
             })
             .then(data => {
                 document.getElementById("city").textContent = `${data.name}, ${data.sys.country}`;
-                document.getElementById("temp").textContent = `${Math.round(data.main.temp)}°C - ${data.weather[0].description}`;
+                document.getElementById("temp").textContent = `${Math.round(data.main.temp)}°C`;
+                document.getElementById("description").textContent = data.weather[0].description;
             })
             .catch(error => {
                 console.error(error);
                 document.getElementById("city").textContent = "Hata!";
                 document.getElementById("temp").textContent = "Hava durumu verisi yüklenirken bir sorun oluştu.";
+                document.getElementById("description").textContent = "";
             });
 
 
