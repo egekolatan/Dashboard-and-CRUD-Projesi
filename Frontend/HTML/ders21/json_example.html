@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Data Array Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #090d16 0%, #111827 100%);
+            color: #f8fafc;
+            position: relative;
+            padding: 4rem 1rem;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        body::before {
+            background: #6366f1;
+            top: 15%;
+            left: 15%;
+            animation: float-blob 12s infinite alternate;
+        }
+
+        body::after {
+            background: #ec4899;
+            bottom: 15%;
+            right: 15%;
+            animation: float-blob 15s infinite alternate-reverse;
+        }
+
+        @keyframes float-blob {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(40px, 30px) scale(1.15);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        .card {
+            background: rgba(31, 41, 55, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transition: all 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .avatar-ring {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #111827;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(to right, #a5b4fc, #fbcfe8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .role {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .skills-title {
+            font-size: 0.85rem;
+            text-align: left;
+            color: #9ca3af;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            justify-content: flex-start;
+        }
+
+        .skill-badge {
+            background: rgba(99, 102, 241, 0.12);
+            color: #c7d2fe;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 0.35rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .skill-badge:hover {
+            background: rgba(99, 102, 241, 0.25);
+            transform: scale(1.05);
+        }
+
+        .error-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 16px;
+            color: #fca5a5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" id="cards-container">
+        <p style="grid-column: 1 / -1; text-align: center; color: #9ca3af;">Veriler yükleniyor...</p>
+    </div>
+
+    <script>
+        const container = document.getElementById('cards-container');
+
+        // fetch ile birden fazla nesne barındıran data.json dizisini yüklüyoruz
+        fetch('data.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("HTTP hatası: " + response.status);
+                }
+                return response.json(); // Gelen diziyi JS Array nesnesine dönüştürür
+            })
+            .then(users => {
+                container.innerHTML = ""; // Yükleniyor mesajını temizle
+
+                // Dizi içerisindeki her kullanıcı için dinamik bir kart oluşturuyoruz
+                users.forEach(user => {
+                    // 1. Yeni bir kart elementi (div) oluştur
+                    const card = document.createElement('div');
+                    card.className = 'card';
+
+                    // 2. Kartın iç HTML yapısını oluştur
+                    card.innerHTML = `
+                        <div>
+                            <div class="avatar-ring">
+                                <div class="avatar">${user.role.includes("Designer") ? "🎨" : "👨‍💻"}</div>
+                            </div>
+                            <h2>${user.name}</h2>
+                            <div class="role">${user.role}</div>
+                            
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Age</div>
+                                    <div class="info-value">${user.age}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Status</div>
+                                    <div class="info-value">${user.isActive ? "Active" : "Inactive"}</div>
+                                </div>
+                            </div>
+
+                            <div class="skills-title">Skills</div>
+                            <div class="skills-container"></div>
+                        </div>
+                    `;
+
+                    // 3. Yetenek rozetlerini döngü ile karta yerleştir
+                    const skillsContainer = card.querySelector('.skills-container');
+                    user.skills.forEach(skill => {
+                        const badge = document.createElement('span');
+                        badge.className = 'skill-badge';
+                        badge.textContent = skill;
+                        skillsContainer.appendChild(badge);
+                    });
+
+                    // 4. Hazırlanan kartı ana konteynere ekle
+                    container.appendChild(card);
+                });
+            })
+            .catch(error => {
+                console.error("Veri yüklenirken hata oluştu:", error);
+                container.innerHTML = `
+                    <div class="error-message">
+                        <h3>Veri Yüklenemedi</h3>
+                        <p style="margin-top: 0.5rem; font-size: 0.95rem; color: #cbd5e1;">
+                            CORS engelini aşmak için projeyi bir yerel sunucu (VS Code Live Server vb.) aracılığıyla açmalısınız.
+                        </p>
+                    </div>
+                `;
+            });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+ 
+    <!-- tek tırnak ve çift tırnak arasında teknik olarak hiçbir fark yoktur -->
+    <!-- bactick değişken eklemek ve cok satırlı yazımlar için kullanılır  -->
+    <!-- CamelCase js te yazılar ilk kelime küçükbaşlar sonraki kelimeler büyük harfle başlar. -->
+
+
+    <script>
+        // let x='merhaba daskmlkdmaskldma'
+        // let y="Merhaba benim adım emre" 
+        
+        // let z=`merhaba
+        // dünya
+        // bu
+        // ${x}
+        // bir 
+        // deneme `
+
+        // alert(y) 
+
+        // string metotlar
+        // let isim="emre"
+        // sayılar indexlenir ve herzaman 0 dan başlar
+      //  alert(isim.length) //length bir değişkenin uzunluğunu verir yani kaç eleman olduğunu söyler 
+        // alert(isim[1])
+        // bana isim değişkeninin 1. indexindeki elemanı ver
+        // mail girerken mail adresimizin büyük küçük harf olmasına dikkat etmiyoruz 
+
+        // let mail="CemilEmreARAS@gmail.COM"
+        // alert(mail.toLowerCase())
+        //bütün harflerimi küçük yazdı. 
+        //toLowerCase() bütün harfleri küçük harf yapar.
+        // alert(mail.toLowerCase())
+        // alert(mail.toUpperCase())
+        // toUpperCase() bütün harfleri büyük harf yapar.
+
+
+        //  js herzaman değişkenler küçük harfle başlar
+
+    //    let isim=" emre   "
+    //    console.log(isim.length)// boşluklar dahil uzunluğu gösterir
+    //    console.log(isim.trim().length   ) //boşlukları silinmiş halinin uzunluğu
+       //başındaki ve sonundaki boşlukları siler
+        // slice kesme parçalama 
+        //  slice bir metnin belirlenen aralığını keser
+
+
+        // let isim="hello World dknaslkdfnlkasnfdlkanslkd ve dknaslkdfnlkasnfdlkanslkd"
+        // console.log(isim.slice(-4))//0. indexten 5.indexe kadar kes
+        //slice(başlangıç değeri, eger varsa 2. değer bitiş değeri yoksa sonuna kadar gider)
+        //eğer başlangıç değeri eksi ise tersten sayılır.
+        // replace değiştirmek düzenlemek
+        // console.log(isim.replaceAll("dknaslkdfnlkasnfdlkanslkd" , "yani merhaba dünya"))
+
+        // replace değiştirmek istediğimiz içeriği değiştireceğimiz içerige göre düzenler bulduğu ilk içeriği değiştirir.
+        //replaceAll hepsini değiştirir.
+
+        let msg="biz JS öğreniyoruz. ve JS diğer diller göre çok eğlenceli. en güncel teknoloji JS"
+
+        // console.log(msg.replaceAll("JS","Python"))
+        //includes varmı içinde geçiyorr mu
+
+        // let email=prompt("email giriniz")
+        // console.log(email.includes("@"))
+
+        // if(email.includes("@")==false){
+        //     alert("lütfen @ işareti kullanın")
+        // }else{
+        //     alert("giriş başarılı")
+        // }
+        // split string ifadeyi belirli bir koşulda liste elemanına gönüştürür.
+
+        // let meyve=prompt("lütfen 3 tane aralarında boşluk bırakarak meyve yazınız")
+        // console.log(meyve)
+        // console.log(meyve.split(" "))
+        let kullanici=" Emre_Aras "
+        console.log(kullanici.replace("_","-").trim().toLowerCase().split("-"))
+        // emre-aras
+        ["emre","aras"]
+ </script>
+    
+</body>
+</html>
+

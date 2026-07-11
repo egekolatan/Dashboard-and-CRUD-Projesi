@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div {
+            border: 1px solid black;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 4fr 1fr;
+            grid-template-areas:
+                "navbar navbar"
+                "resim yazi"
+                "footer footer";
+            gap: 10px;
+        }
+
+        .navbar {
+            grid-area: navbar;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: blue;
+            color: white;
+        }
+
+        .resim {
+            grid-area: resim;
+        }
+
+        .yazi {
+            grid-area: yazi;
+        }
+
+        .footer {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-area: footer;
+
+
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+
+        }
+
+        .navbar ul {
+            display: flex;
+            justify-content: center;
+
+
+        }
+
+        .navbar li {
+            list-style: none;
+            padding: 10px;
+        }
+
+        .logo {
+            width: 250px;
+            border: none;
+            display: flex;
+
+
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <ul>
+                <li><a href="">Anasayfa</a></li>
+                <li><a href="">Hakkımızda</a></li>
+                <li><a href="">İletişim</a></li>
+                <li><a href="">Yardım</a></li>
+            </ul>
+        </div>
+        <div class="resim">
+            <img src="4.20.jpg" alt="">
+        </div>
+        <div class="yazi">
+            <p>BMW (Bayerische Motoren Werke), 1913 yılında Almanya'nın Münih kentinde kurulan ve günümüzde dünyanın
+                önde gelen lüks otomobil ve motosiklet üreticilerinden biri olan markadır.
+                İsim Anlamı: BMW'nin açılımı Bayerische Motoren Werke (Bavyera Motor Fabrikaları) şeklindedir.
+                Kuruluş: Şirket ilk olarak uçak motoru üretmek amacıyla kurulmuş, otomobil üretimine ise 1928 yılında
+                geçmiştir.
+                Slogan: Markanın dünyaca ünlü resmi sloganı "Sheer Driving Pleasure" (Gerçek Sürüş Keyfi) olarak
+                bilinir.
+                Logo: Mavi ve beyaz renklerden oluşan amblemin, Bavyera eyaletinin renklerini temsil ettiği veya
+                şirketin havacılık geçmişine atıfla bir uçak pervanesini simgelediği kabul edilir.
+                Öne Çıkan Modeller ve Seriler
+                BMW, araçlarını genellikle kullanım amacına ve boyutuna göre serilere ayırır:
+                Binek Modeller: 1 Serisi'nden 8 Serisi'ne kadar uzanan sedan, coupe ve hatchback modelleri mevcuttur.
+                X Serisi: BMW'nin "SAV" (Sports Activity Vehicle) olarak adlandırdığı SUV modellerini kapsar.
+                M Serisi: BMW M (Motorsport) departmanı tarafından geliştirilen yüksek performanslı spor araçlardır.
+                i Serisi: Markanın tamamen elektrikli ve hibrit teknolojisine sahip modellerini temsil eder.
+                Motorrad: BMW'nin motosiklet üretim birimidir.
+                Güncel Durum ve Teknoloji
+                Üretim: Almanya'nın Dingolfing şehri, BMW'nin en büyük üretim tesislerinden birine ev sahipliği yapar.
+                Türkiye Distribütörü: Türkiye'deki faaliyetleri Borusan Otomotiv tarafından yürütülmektedir.
+                En Güçlü Model: Teknik verilere göre BMW M5 CS, markanın tarihindeki en güçlü seri üretim
+                otomobillerinden biri olarak kabul edilir.
+                Dijital Hizmetler: BMW ConnectedDrive üzerinden araç sahiplerine dijital bağlantı ve akıllı servis
+                çözümleri sunulmaktadır.
+            <p>Temel Tasarım ve Gövde Tipleri
+                İki Kapılı Form: Standart Coupe modeli iki kapılıdır ve arkaya doğru alçalan tavan çizgisiyle (fastback)
+                sportif bir görünüm sunar.
+                Gövde Kodları: İlk nesil F32, 2020 sonrası üretilen ikinci nesil ise G22 kasa koduyla anılır.
+                İkonik Ön Izgara: İkinci nesil (G22) ile gelen dikey ve büyük "böbrek" ızgaralar, modelin en çok
+                konuşulan ve onu 3 Serisi'nden ayıran en belirgin tasarım özelliğidir.</p>
+            <p>Performans ve Motor Seçenekleri
+                Türkiye pazarında ve küresel ölçekte en yaygın seçenekler şunlardır:
+                BMW 420i: Genellikle 1.6 litrelik (Türkiye'ye özel) veya 2.0 litrelik turbo benzinli motorla sunulur.
+                Yaklaşık 170-184 bg güç üretir.</p>
+            <p>Model:4.20 İ Coupe BMW M Sport</p>
+
+            </p>
+        </div>
+        <div class="footer">
+            <div class="logo"><img src="logo.jpeg" alt=""></div>
+            <div class="liste">
+                <ul>
+                    <li>Anasayfa</li>
+                    <li>Hakkımızda</li>
+                    <li>İletişim</li>
+                    <li>Yardım</li>
+                </ul>
+
+            </div>
+            <div>
+                <p>
+                    Özgörkey Otomotiv
+                    Satış:BMW,BMW i,MINI,MINI Electric,Land Rover,BMW Motorrad
+
+                    Servis:BMW,BMW i,MINI,Land Rover,BMW Motorrad
+
+
+                    Üniversite Cad.No:66 35100 Bornova
+
+
+                    0232 388 19 90
+                    0232 374 50 19
+
+
+                    Haritada Gör
+
+
+                    http://www.ozgorkeyotomotiv.com
+
+
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

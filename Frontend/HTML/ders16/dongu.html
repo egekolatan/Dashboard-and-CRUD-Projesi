@@ -1,0 +1,37 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+
+
+    <script>
+
+        let sayi=12
+        let hak=4
+
+        while(true){
+            let x=Number(prompt("bir sayı giriniz"))
+            if(sayi<x){
+
+                alert("daha aşşağı")
+                
+            }else if(sayi>x){
+                alert("daha yukarı")
+            }else if(sayi==x){
+                alert("doğru tahmin")
+                break
+            }
+            if(hak==0){
+                alert("hakkınız bitti")
+                break
+            }
+            hak--
+        }
+    </script>
+</body>
+</html>

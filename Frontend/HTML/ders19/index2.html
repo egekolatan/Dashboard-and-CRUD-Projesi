@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p>0</p>
+    <button id="btn">arttır</button>
+    <button id="btn1">azalt</button>
+
+
+
+
+    <script>
+        let element=document.querySelector("#btn")
+        let element1=document.querySelector("#btn1")
+        let parag=document.querySelector("p")
+        let sayi=0
+        element.addEventListener("click",function(){
+            sayi++
+            parag.innerText=sayi
+        })
+        element1.addEventListener("click",function(){
+            sayi--
+            parag.innerHTML=sayi
+        })
+        // element.addEventListener("click",function(){
+        //  sayi++
+        //  console.log(sayi)
+        //  parag.innerHTML=sayi
+        // })
+    </script>
+</body>
+</html>

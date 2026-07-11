@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        /* universal seçici */
+        * {
+            color: red;
+        }
+
+        /* etiket-element seçici */
+        h1 {
+            background-color: aquamarine;
+        }
+
+        /* class seçici */
+        .ikinci {
+            color: purple;
+        }
+
+        .deneme {
+            background-color: yellow;
+        }
+
+        .uc {
+            font-size: 50px;
+        }
+
+        #bir {
+            font-size: 40px;
+        }
+
+        div p {
+            color: black;
+        }
+
+        /* input{
+            width: 300px;
+        } */
+        input[type="password"] {
+            width: 140px;
+        }
+    </style>
+    <!--üstte inputta yaptığım gibi iki örnek var type seçersem sadece birini değiştirir.input yazarsam inputlar değişir-->
+</head>
+
+<body>
+
+
+    <p>Lorem ipsum dolor sit amet.</p>
+    <div>
+        <p>Lorem, ipsum dolor.</p>
+        <p>Lorem, ipsum dolor.</p>
+        <p>Ipsa, nesciunt aspernatur?</p>
+        <p>Est, ducimus facilis.</p>
+    </div>
+    <label for="isim">isim</label>
+    <input type="text"><br>
+    <label for="şifre">şifre</label>
+    <input type="password">
+    <!-- <div>
+        <h1 class="deneme" id="bir">Lorem, ipsum dolor.</h1>
+        <h1 class="ikinci deneme uc">Tempore, id nulla!</h1>
+        <h1>Omnis, eum itaque.</h1>
+        <h1>Asperiores, dolorem explicabo!</h1>
+        <p class="ikinci">Lorem ipsum dolor sit.</p>
+        <p>Ratione, itaque culpa? Qui!</p>
+        <p>Accusamus nihil repudiandae quae.</p>
+        <p class="ikinci">Rem optio quibusdam nisi!</p>
+    </div> -->
+</body>
+<!-- class açtığımız zaman birleşik olmadığı sürece her şekilde anlıyor nokta kullanmak zorundayız tanımlarken -->
+
+</html>

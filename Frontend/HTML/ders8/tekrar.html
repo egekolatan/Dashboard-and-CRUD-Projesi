@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        button:hover{
+            padding: 10px;
+            border-radius: 5px;
+            background-color: blue;
+            color: white;
+            border-color: red;
+        }
+        p:nth-child(2){
+            color: red;
+        }
+        button:active{
+            background-color: pink;
+        }
+        input:focus{
+            background-color: red;
+            color: white;
+        }
+        /* p:not(.deneme){
+            color: red;
+
+        } */
+        
+
+    </style>
+</head>
+<body>
+    <!-- text-transform,table,pesudo classlar. -->
+     <!-- hover örneği buttonun üstüne geldiğimizde olan renkler verdiğimiz elementler yada -->
+      <!-- active de sadece basılı tuttuğumuzda oluyor -->
+       <!-- focus örneğide aynı şekilde bastğımızda rengi değişir -->
+        <!-- not.deneme örneğinde o hariç hepsinin rengini aynı yapıyor -->
+       <input type="text">
+     <button>Gönder</button>
+     <div>
+        <p class="deneme">Lorem ipsum dolor sit amet consectetur.</p>
+        <p>Lorem ipsum dolor sit amet.</p>
+        <p>Lorem ipsum dolor sit amet.</p>
+        <p>Lorem ipsum dolor sit amet.</p>
+     </div>
+</body>
+</html>

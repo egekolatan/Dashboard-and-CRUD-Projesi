@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        img{
+            display: none;
+        }
+        #btn{
+            display: none;
+        }
+        #btn3{
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <img src="bir.jpeg" id="resim" alt="" width="400px">
+    <button id="btn">Değiştir</button>
+    <button id="btn2">Göster</button>
+    <button id="btn3">Kaldır</button>
+    <!-- <ul>
+        <li>Lorem.</li>
+        <li>Placeat.</li>
+        <li>Minima.</li>
+        <li>Est.</li>
+    </ul> -->
+
+
+
+
+    <script>
+      let resim=document.querySelector("#resim")
+       let button=document.querySelector("#btn")
+       let btn2=document.querySelector("#btn2")
+       let btn3=document.querySelector("#btn3")
+
+       btn2.onclick=function(){
+        button.style.display="block"
+        resim.style.display="block"
+        btn2.style.display="none"
+        btn3.style.display="block"
+       }
+    //    console.log(res)
+
+       button.onclick=function(){
+        if(resim.getAttribute("src")=="bir.jpeg"){
+            resim.setAttribute("src","iki.jpg")
+        }else{
+            resim.setAttribute("src","bir.jpeg")
+        }
+       }
+       btn3.onclick=function(){
+        button.style.display="none"
+        resim.style.display="none"
+        btn2.style.display="block"
+        btn3.style.display="none"
+       }
+        // let list=document.querySelectorAll("#deneme li")
+        // list.forEach(function(item,key){
+            
+        // })
+
+
+    </script>
+</body>
+
+</html>

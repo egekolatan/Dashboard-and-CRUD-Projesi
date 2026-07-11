@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @keyframes ege{
+            0%,100%{
+                top: 0;
+                left: 0;
+                background-color: red;
+            }
+            25%{
+                top: 0;
+                left: 100px;
+                background-color: blue;
+                border-radius: 0;
+            }
+            50%{
+                top: 100px;
+                left: 100px;
+                background-color: purple;
+                border-radius: 50%;
+            }
+            75%{
+                top: 100px;
+                left: 0px;
+                background-color: pink;
+                border-radius: 0;
+            }
+               
+        }
+        div{
+            /* animation: name duration timing-function delay iteration-count direction fill-mode; */
+            position: absolute ;
+            border: 1px solid black;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            animation: ege 4s linear 0s  infinite normal forwards ;
+        }
+        
+    </style>
+</head>
+<body>
+    <div></div>
+</body>
+</html>

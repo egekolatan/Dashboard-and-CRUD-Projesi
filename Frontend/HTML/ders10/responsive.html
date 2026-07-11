@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div,
+        section{
+            border: 1px solid black;
+        }
+        div{
+            height: 100px;
+            background-color: blue;
+        }
+        section{
+            height: 50px;
+            background-color: red;
+        }
+        main{
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+        }
+        @media screen and (min-width:600px) and (max-width:800px){
+            main{
+                grid-template-columns: repeat(3,1fr);
+            }
+        }
+        @media screen and (max-width:599px){
+            main{
+                grid-template-columns: repeat(2,1fr);
+            }
+        } 
+            
+        
+    </style>
+</head>
+<body>
+    <div></div>
+        <main>
+            <section></section>
+            <section></section>
+            <section></section>
+            <section></section>
+            <section></section>
+            <section></section>
+            <section></section>
+            <section></section>
+        </main>
+    
+</body>
+</html>

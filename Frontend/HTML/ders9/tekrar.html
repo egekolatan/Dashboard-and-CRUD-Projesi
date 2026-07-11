@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+            height: 1500px;
+        }
+        section{
+            height: 500px;
+            border: 1px solid black;
+        }
+        div{
+            width: 100px;
+            height: 100px;
+            border: 1px solid red;
+
+        }
+        .stick{
+            border-color: blue;
+            position: sticky;
+            top: 100px;
+            left: 10px;  
+            transition: all 3s linear ;
+            background-color: red;
+            /*1. özellik property-hover- hangi özelliğin değişmesini istiyorsam o özelliği veririm yada all vererek bütün hover özelliklerini uygularım*/
+            /*2. özellik duration yani ne kadar zamanda tamamlanacağı belirtir*/
+            /*3. timing function yani geçiş hızını belirtir*/
+            /*4. özellik delay kaç saniye gecikmeli başlamasını belirtir*/
+        }
+        .stick:hover{
+            transform: rotate(180deg);
+            background-color: aqua;
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <!-- transform-hero-img-position -->
+     <!-- stickye verdiğim değere gelene kadar kendi yerinde duruyor verdiğim değere geldiğinde sayfayı takip etmeye başlar kapyasıcısı bitene kadar  -->
+      <!-- relative kendi yerini korur-absolute relativle birlikte kullanılır kendi yerine korumaz relativ dive göre pozisyonlanır
+       eğer relative içinde değilse body referasn alınır -->
+
+      <section>
+        <div></div>
+        <div class="stick"></div>
+        <div></div>
+      </section>
+</body>
+</html>

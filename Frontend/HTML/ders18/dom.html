@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- dom(Document object model) -->
+    <h1 id="baslik">Ege Kolatan</h1>
+    <!-- document.getElementById("id") = etiketin idsine göre eleman seçmeye yarar -->
+    <p class="parag">Bu bir paragraf</p>
+    <h2 class="parag">bu 2. başlık</h2>
+    <!-- document.getElementsByClassName("parag") etiketin clasına göre elaman seçmeye yarar fakat hangi elamana işlem
+      yapmak istiyorsak onun index numarasına göre işlem yapmamız gerekir -->
+      <!-- document.getElementsByTagName("li") etikete göre eleman secer hangi elemana işlem
+      yapmak istiyorsak index numarasına göre işlem yapmamız gerekir -->
+
+    <ul>
+
+
+        <li>Lorem, ipsum.</li>
+        <li>Est, provident.</li>
+        <li>Rem, maxime.</li>
+
+    </ul>
+
+
+
+    <script>
+        // let baslik = document.getElementById("baslik")
+        // console.log(baslik.innerHTML)
+        // baslik.innerHTML = "bu bir denemedir"
+        // let paragraf = document.getElementsByClassName("parag")
+        // console.log(paragraf[0].innerHTML)
+        // let liste = document.getElementsByTagName("li")
+        // console.log(liste[2].innerHTML)
+
+        let list=document.querySelectorAll(".parag")
+        console.log(list[1].innerHTML)
+        // parag classına sahip bütün elemanları seçer yani istediğimi classı console yazdırabilirim eğer
+        // querySelectorAll yazmassam köşeli parantez içinde istediğim classı yazdıramıyorum
+        let liste=document.querySelectorAll("li")
+        liste[2].innerHTML="bu sadece htmlin içini değiştirir"
+        console.log(liste[2].innerHTML)
+
+        let baslik=document.querySelector("#baslik")
+        console.log(baslik.innerHTML)
+
+        
+    </script>
+</body>
+
+</html>

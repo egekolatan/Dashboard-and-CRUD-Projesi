@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pozisyonlar</title>
+    <style>
+        body{
+            height: 1500px ;
+        }
+        div{
+            width: 100px;
+            height: 100px;
+            border: 1px solid black;
+            /*position: static;/*default değerdir kullanmaya gerek yok*/
+            /* position: relative; kendi yerini korur istediğimiz noktaya pozisyonlandırılabilir */
+            /* position: absolute; kendi yerini korumaz sayfada özgürce pozisyonlandırılabilir */
+            /* position: fixed; verdiğim pozisyona göre sayfanın scroll olsa bile her türlü sabit kalması gibi fixed kalır yani */
+            /* left: 100px;
+            top: 100px; */
+        }
+        .deneme{
+            /* position: sticky; kendi yerini korur verilen değeri geldiğinde sayfaya fixlenerek devam eder tekrar eski konumuna döndüğünde yerine yerleşir  */
+            top: 0;
+            border-color: red;
+
+        }
+    </style>
+</head>
+<body>
+    <div>
+          <!-- kural 1 position absolute relative le birlikte kullanılır -->
+    </div>
+    <div></div>
+    <div></div>
+    <div class="deneme"></div>
+    <div></div>
+    <div></div>
+    <!-- <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Asperiores, quaerat voluptas vero architecto mollitia neque aut delectus voluptatem qui explicabo reiciendis repellendus libero maxime culpa? Dolorem ut optio soluta ipsam?</p> -->
+</body>
+</html>
