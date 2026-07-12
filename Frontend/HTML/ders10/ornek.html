@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div{
+            border: 1px solid black;
+        }
+        .container{
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 4fr 1fr;
+            grid-template-areas: 
+            "navbar navbar"
+            "resim yazi"
+            "footer footer";
+            gap: 10px;
+        }
+        .navbar{
+            grid-area: navbar;
+            background-color: red;
+        }
+        .resim{
+            grid-area: resim;
+            background-color: aqua;
+        }
+        .yazi{
+            grid-area: yazi;
+            background-color: purple;
+        }
+        .footer{
+            grid-area: footer;
+            background-color: black;
+        }
+        img{
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navbar"></div>
+        <div class="resim">
+            <img src="merco.jpg" alt="">
+        </div>
+        <div class="yazi"></div>
+        <div class="footer"></div>
+    </div>
+</body>
+</html>

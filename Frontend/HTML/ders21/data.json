@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "name": "Ahmet emre",
+    "role": "Frontend Developer",
+    "age": 28,
+    "isActive": true,
+    "skills": [
+      "HTML5",
+      "CSS3",
+      "JavaScript",
+      "React",
+      "Vue"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Elif Demir",
+    "role": "UI/UX Designer",
+    "age": 25,
+    "isActive": true,
+    "skills": [
+      "Figma",
+      "Sketch",
+      "Adobe XD",
+      "CSS3",
+      "HTML5"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Can Öztürk",
+    "role": "Backend Developer",
+    "age": 32,
+    "isActive": false,
+    "skills": [
+      "Python",
+      "Django",
+      "PostgreSQL",
+      "Docker",
+      "Node.js"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Mehmet Kaya",
+    "role": "Frontend Developer",
+    "age": 28,
+    "isActive": true,
+    "skills": [
+      "HTML5",
+      "CSS3",
+      "JavaScript",
+      "React",
+      "Vue"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Fatma Yılmaz",
+    "role": "UI/UX Designer",
+    "age": 25,
+    "isActive": true,
+    "skills": [
+      "Figma",
+      "Sketch",
+      "Adobe XD",
+      "CSS3",
+      "HTML5"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Ayşe Öztürk",
+    "role": "Backend Developer",
+    "age": 32,
+    "isActive": false,
+    "skills": [
+      "Python",
+      "Django",
+      "PostgreSQL",
+      "Docker",
+      "Node.js"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Ali Veli",
+    "role": "Frontend Developer",
+    "age": 28,
+    "isActive": true,
+    "skills": [
+      "HTML5",
+      "CSS3",
+      "JavaScript",
+      "React",
+      "Vue"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Ayşe Veli",
+    "role": "UI/UX Designer",
+    "age": 25,
+    "isActive": true,
+    "skills": [
+      "Figma",
+      "Sketch",
+      "Adobe XD",
+      "CSS3",
+      "HTML5"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Mehmet Veli",
+    "role": "Backend Developer",
+    "age": 32,
+    "isActive": false,
+    "skills": [
+      "Python",
+      "Django",
+      "PostgreSQL",
+      "Docker",
+      "Node.js"
+    ]
+  }
+]

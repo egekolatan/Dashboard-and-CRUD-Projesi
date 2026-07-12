@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .timer-container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #timer {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+        button {
+            font-size: 1rem;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #btnStop {
+            background-color: #dc3545;
+        }
+        #btnStop:hover {
+            background-color: #bd2130;
+        }
+        #btnReset {
+            background-color: #6c757d;
+        }
+        #btnReset:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="timer-container">
+        <div id="timer">00:00</div>
+        <button id="btnStart">Başlat</button>
+        <button id="btnStop">Durdur</button>
+        <button id="btnReset">Sıfırla</button>
+    </div>
+
+    <script>
+        let timerDisplay = document.getElementById("timer");
+        let btnStart = document.getElementById("btnStart");
+        let btnStop = document.getElementById("btnStop");
+        let btnReset = document.getElementById("btnReset");
+
+        let seconds = 0;
+        let intervalId = null;
+
+        function updateTimer() {
+            let mins = Math.floor(seconds / 60);
+            let secs = seconds % 60;
+
+            let minsStr = mins < 10 ? "0" + mins : mins;
+            let secsStr = secs < 10 ? "0" + secs : secs;
+
+            timerDisplay.textContent = minsStr + ":" + secsStr;
+        }
+
+        btnStart.addEventListener("click", function () {
+            if (intervalId === null) {
+                intervalId = setInterval(function () {
+                    seconds++;
+                    updateTimer();
+                }, 1000);
+            }
+        });
+
+        btnStop.addEventListener("click", function () {
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        });
+
+        btnReset.addEventListener("click", function () {
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            seconds = 0;
+            updateTimer();
+        });
+    </script>
+</body>
+
+</html>

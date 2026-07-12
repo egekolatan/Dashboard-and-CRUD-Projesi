@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; */
+        /* } */
+
+        a {
+            padding: 10px;
+            text-decoration: none;
+            color: blue;
+            border: 1px solid black;
+            border-radius: 10px;
+        }
+
+        div {
+            margin-top: 10px;
+            margin-left: 5px;
+        }
+
+        /* a:hover {
+            background-color: blue;
+            color: white;
+        } */
+         a:active{
+            color: red;
+            background-color: blue;
+         }
+         input{
+            padding: 5;
+            border-radius: 5px;
+         }
+         input:focus{
+                background-color: red;
+                color: white;
+         }
+         li:nth-child(even){
+               background-color: aqua;
+         }
+    </style>
+</head>
+
+<body>
+    <!-- pseude class -->
+    <!-- :hover imleç üstüne geldiğinde etiketin hover özelliğine verilen değerleri alır;üstüne gelincerengi değişir kendi yaptığımıza bağlı -->
+    <!-- :active sadece aktifken yani imleç üstünde basılıyken active özelliğine verilen değerleri alır -->
+     <!-- :focus bir öğeye odaklandığında yani içerisine girdiğinde verilen özellikler oluşur genellikle form elemanlarında kullanılır -->
+      <!-- odd tek elemanları temsil eder -->
+       <!-- even çift elemanları temsil eder -->
+        <!-- not tagı p ye class verditken sonra yani kısaca class verdikten sonra örnek;
+         p etiketinin classına iki yazdım p not:(.iki) yazarsam sadece tek bir blok yani metin renksiz kalır örnek;bide backgrounnd color verirsem class verdiğim hariç hepsi renkli not verirsem o hariç hepsi -->
+
+    <div>
+        <a href="">Hakkımızda</a>
+        <input type="text" placeholder="isim giriniz">
+
+        <ul>
+            <li>Lorem.</li>
+            <li>Fugiat!</li>
+            <li>Excepturi.</li>
+            <li>Quas!</li>
+            <li>Lorem.</li>
+            <li>Quis!</li>
+            <li>Quae.</li>
+            <li>Officiis.</li>
+        </ul>
+    </div>
+</body>
+ 
+</html>

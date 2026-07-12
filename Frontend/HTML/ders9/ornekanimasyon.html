@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        span{
+            position: relative;
+            top: 10px;
+            left: 30px;
+            display: inline-block;
+            border: 1px solid black;
+            transform: rotate(25deg);
+            border-radius: 5px;
+            padding: 5px;
+            animation: bomerang 4s linear 0s 1 normal forwards  ;
+        }
+        @keyframes bomerang{
+             0%{
+                transform: rotate(25deg);
+             }
+             25%{
+                left: 50px;
+               
+             }
+             50%{
+                left: 100px;
+                transform: rotate(0);
+             }
+             75%{
+                transform: rotate(180deg);
+             }
+             100%{
+                transform: rotate(360deg);
+             }
+
+        }
+    </style>
+</head>
+<body>
+    <span>CSS</span>
+</body>
+</html>

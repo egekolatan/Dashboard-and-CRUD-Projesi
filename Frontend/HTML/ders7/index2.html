@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+      <style>
+        p:has(span){
+            background-color: aqua;
+        }
+        /* spana sahip paragraflara verilen özelliği uygular */
+        /* :is (h1.h2.h3) hepsini kapsıyor demektir:h1,h2,h3 de aynı anlama geliyor ikiside aynı işlevi görür ikisinide kullanabiliriz */
+        p::first-letter{
+            color: red;
+            font-size: 40px;
+        }
+        /* first-line ilk satırı temsil eder  */
+        /* first-letter ilk harfi temsil eder */
+        ::selection{
+            background-color: yellow;
+        }
+         /* ::selection yazıların üstüne basıp seçtiğimde seçtiğim alanın rengine ne verdiysem o renk olur  */
+         input{
+            background-color: red;
+            border-color: black;
+            padding: 10px;
+            border-radius: 5px;
+         }
+
+         input::placeholder{
+            color: white;
+         }
+         li::marker{
+            content: "*";
+            color: red;
+            font-size: 20px;
+         }
+      </style>
+</head>
+<body>
+    <ul>
+        <li>Lorem.</li>
+        <li>Excepturi?</li>
+        <li>Neque.</li>
+    </ul>
+    <input type="text" placeholder="isim giriniz">
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Debitis, ea?</p>
+
+
+    <div>
+        <p>Lorem, <span>ipsum</span> dolor.</p>
+    </div>
+    <div>
+        <p>Officiis, omnis fugiat!</p>
+    </div>
+    <div>
+        <p>Temporibus, <span>quae</span> accusamus?</p>
+    </div>
+</body>
+</html>

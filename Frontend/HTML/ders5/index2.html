@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        div {
+            border: 1px solid black;
+            height: 200px;
+            width: 200px;
+        }
+
+        section {
+            height: 100vh;
+            display: flex;
+            /* flex-direction: column-reverse;  */
+            /* karşımıza çıkabilir çok tercih edilen bir yapı değildir flex-direction.*/
+            justify-content: space-evenly;
+            /* kapsayıcının içerisindeki elemanları flex yapar ve x ekseninde pozisyonlanmasını sağlar */
+            align-items: center;
+            /* align items y- ekseninde konumlandırır */
+            /* align items kullanılabilmesi için yükseklik olmazsa olmazdır.
+            kesin height değeri olmalıdır.kapsayıcının içerisndekei bütün elemntlere uygular */
+            /* div yerine ve section yerine class konulabilirdi yani divlere class verebilirdik  */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- justify content display-flex display-grid -->
+    <!-- kapsayıcıya verilir -->
+    <!-- display flex özelliği kapsayıcıya (parent elemente verilir) -->
+    <section>
+        <div>bir</div>
+        <div>iki</div>
+        <div>uc</div>
+        <div>dort</div>
+    </section>
+</body>
+
+</html>

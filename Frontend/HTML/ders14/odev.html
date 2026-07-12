@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            /* margin: auto; */
+            width: 500px;
+            height: 500px;
+            display: grid;
+
+            grid-template-areas:
+                "create social social Schule"
+                "create social social Schule "
+                "create manage maintain Schule"
+
+                "write manage maintain Schule"
+                "write elli grow grow"
+                "write elli grow grow";
+            gap: 5px;
+
+        }
+
+        .container div {
+            border: 1px solid black;
+            border-radius: 10px;
+        }
+
+        .create {
+            grid-area: create;
+            background-color: pink;
+        }
+
+        .social {
+            grid-area: social;
+            background-color: purple;
+        }
+
+        .Schule {
+            grid-area: Schule;
+            background-color: rgb(185,110,185);
+        }
+
+        .manage {
+            grid-area: manage;
+        }
+
+        .maintain {
+            grid-area: maintain;
+            background-color: yellow;
+        }
+
+        .write {
+            grid-area: write;
+            background-color: yellow;
+        }
+
+        .elli {
+            grid-area: elli;
+        }
+
+        .grow {
+            grid-area: grow;
+            background-color: purple;
+        }
+        @media screen and  (max-width:576px){
+            .container{
+                display: grid;
+                grid-template-areas: 
+                "create"
+                "create"
+                "create"
+                "social"
+                "Schule"
+                "grow"
+                "maintain"
+                "write"
+                "elli"
+                "manage";
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="create"></div>
+        <div class="social"></div>
+        <div class="Schule"></div>
+        <div class="manage"></div>
+        <div class="maintain"></div>
+        <div class="write"></div>
+        <div class="elli"></div>
+        <div class="grow"></div>
+
+    </div>
+</body>
+
+</html>

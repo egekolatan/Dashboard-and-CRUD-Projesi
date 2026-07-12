@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        button{
+            padding: 10px;
+            border-radius: 10px;
+            background-color: blue;
+            color: white;
+            border: none;
+            transition: all 3s linear;
+        }
+        button:hover{
+            background-color: red;
+            color: black;
+        }
+        
+       span{
+        font-size: 80px;
+        font-weight: bold;
+        animation: deneme 2s linear 1 forwards;
+       }
+       .iki{
+        color: blue;
+        animation-delay: 2s;
+       }
+       .uc{
+        color: purple;
+        animation-delay: 4s;
+       }
+       .dort{
+        color: aqua;
+        animation-delay: 6s;
+       }
+       .bes{
+        color: brown;
+        animation-delay: 8s;
+       }
+       @keyframes deneme{
+        to{
+            color: red;
+        }
+       }
+       
+       
+        
+        
+    </style>
+</head>
+<body>
+    <button>Üstüne Gel</button>
+    <p><span class="bir">H</span> <span class="iki">E</span> <span class="uc">L</span> <span class="dort">L</span> <span class="bes">O</span></p>
+</body>
+</html>
