@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Dashboard</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js for premium visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" class="logo-icon">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="logo-text">Kolatan</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="overview">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Genel Bakış</span>
+                </button>
+                <button class="nav-item" data-tab="tasks">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span>Görevler</span>
+                    <span class="badge" id="task-badge">0</span>
+                </button>
+                <button class="nav-item" data-tab="finance">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>Bütçe</span>
+                </button>
+                <button class="nav-item" data-tab="notes">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>Notlar</span>
+                </button>
+                <button class="nav-item" data-tab="products">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    <span>Envanter</span>
+                </button>
+                <button class="nav-item" data-tab="settings">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Ayarlar</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="theme-toggle-container">
+                    <button class="theme-btn active" id="theme-dark-btn" aria-label="Koyu Tema">
+                        <svg viewBox="0 0 24 24" class="theme-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </button>
+                    <button class="theme-btn" id="theme-light-btn" aria-label="Açık Tema">
+                        <svg viewBox="0 0 24 24" class="theme-icon"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </button>
+                </div>
+                <div class="user-profile" style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <div class="avatar" id="user-avatar-initial">E</div>
+                        <div class="user-info">
+                            <span class="user-name" id="display-username">Kullanıcı</span>
+                            <span class="user-role">Yönetici</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.25rem;">
+                        <!-- Bildirim Zil Butonu ve Açılır Listesi -->
+                        <div class="notification-center">
+                            <button class="notification-trigger" id="notif-trigger" aria-label="Bildirimler" style="background: none; border: none; padding: 0.45rem; cursor: pointer; transition: transform 0.15s ease;">
+                                <svg class="bell-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18" style="transition: transform 0.15s ease; color: var(--text-secondary);">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                                </svg>
+                                <span class="notif-badge hidden" id="notif-badge-count">0</span>
+                            </button>
+                            <div class="notification-dropdown" id="notif-dropdown">
+                                <div class="notif-dropdown-header">
+                                    <h4>Bildirimler</h4>
+                                    <button id="clear-notifs-btn">Temizle</button>
+                                </div>
+                                <ul class="notif-list" id="notif-list-container">
+                                    <li class="empty-notif-msg">Yeni bildirim bulunmuyor.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <button id="logout-btn" title="Çıkış Yap" style="background: none; border: none; padding: 0.45rem; cursor: pointer; transition: transform 0.15s ease, opacity 0.15s ease; opacity: 0.85; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.transform='scale(1.15)'; this.style.opacity='1';" onmouseout="this.style.transform='scale(1.0)'; this.style.opacity='0.85';">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="#ef4444" width="18" height="18">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <h1 class="page-title" id="page-title-text" style="margin: 0;">Genel Bakış</h1>
+                    
+                    <!-- Modern ve Kapsamlı Saat/Tarih Paneli -->
+                    <div class="header-clock-panel" style="display: flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 0.4rem 0.85rem; border-radius: var(--radius-md); font-family: var(--font-title); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <!-- Saat Bölümü -->
+                        <div style="display: flex; align-items: baseline; gap: 0.05rem;">
+                            <span id="clock-hour" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">00</span>
+                            <span id="clock-colon" class="blink-animation" style="font-size: 1.25rem; font-weight: 700; color: var(--accent-color);">:</span>
+                            <span id="clock-minute" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">00</span>
+                            <span id="clock-second" style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); margin-left: 0.2rem;">00</span>
+                        </div>
+                        <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15);"></div>
+                        <!-- Tarih Bölümü -->
+                        <div style="display: flex; flex-direction: column; line-height: 1.15;">
+                            <span id="clock-date" style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">01 Ocak 2026</span>
+                            <span id="clock-day" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Pazartesi</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="realtime-indicator">
+                        <span class="pulse-dot"></span>
+                        <span class="indicator-text">Gerçek Zamanlı</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- PANEL: OVERVIEW -->
+                <section class="tab-panel active" id="panel-overview">
+                    <!-- Akıllı Karşılama Paneli -->
+                    <div class="welcome-banner">
+                        <div class="welcome-banner-content">
+                            <h2 class="welcome-greeting" id="welcome-greeting-text">Yükleniyor...</h2>
+                            <p class="welcome-message" id="welcome-message-text">Bugün kontrol etmeniz gereken işler bulunuyor.</p>
+                            <div class="welcome-quote" id="welcome-quote-el">💡 <em>Hayal edebildiğin her şey gerçektir.</em></div>
+                        </div>
+                        <div class="welcome-weather" style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1.25rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: var(--radius-md); transition: all 0.3s ease;">
+                            <span class="weather-icon" id="weather-icon-el" style="font-size: 2.2rem;">☀️</span>
+                            <div class="weather-info" style="display: flex; flex-direction: column; justify-content: center;">
+                                <span class="weather-temp" id="weather-temp-el" style="font-size: 1.4rem; font-weight: 700; font-family: var(--font-title); color: var(--text-primary);">--°C</span>
+                                <span class="weather-city" id="weather-city-el" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Yükleniyor...</span>
+                            </div>
+                            <div id="weather-details-el" style="display: flex; flex-direction: column; font-size: 0.75rem; color: var(--text-secondary); border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 0.75rem; gap: 0.15rem; min-width: 110px;">
+                                <span id="weather-desc-el" style="font-weight: 600; color: var(--accent-color);">Durum: --</span>
+                                <span id="weather-feels-el">Hissedilen: --°C</span>
+                                <span id="weather-humidity-el">💧 Nem: %--</span>
+                                <span id="weather-wind-el">💨 Rüzgar: -- km/h</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="stat-card gradient-1">
+                            <div class="stat-header">
+                                <span class="stat-title">Toplam Bakiye</span>
+                                <div class="stat-icon">₺</div>
+                            </div>
+                            <div class="stat-value" id="stat-balance">₺0.00</div>
+                            <div class="stat-footer">
+                                <span class="stat-trend trend-up">↑ 100%</span>
+                                <span class="stat-desc">Bu Ayki Net Durum</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card gradient-2">
+                            <div class="stat-header">
+                                <span class="stat-title">Aktif Görevler</span>
+                                <svg class="stat-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            </div>
+                            <div class="stat-value" id="stat-tasks">0 / 0</div>
+                            <div class="stat-footer">
+                                <span class="stat-desc" id="stat-tasks-desc">Tamamlanma oranı: %0</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card cpu-card">
+                            <div class="stat-header">
+                                <span class="stat-title">CPU Kullanımı</span>
+                                <div class="realtime-tag">Realtime</div>
+                            </div>
+                            <div class="stat-value" id="stat-cpu">0%</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="cpu-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card memory-card">
+                            <div class="stat-header">
+                                <span class="stat-title">Bellek (RAM)</span>
+                                <div class="realtime-tag">Realtime</div>
+                            </div>
+                            <div class="stat-value" id="stat-ram">0%</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="ram-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CANLI PİYASA TAKİP BANDI (TICKER TAPE) -->
+                    <div class="dashboard-card" style="padding: 0.5rem; margin-bottom: 1.5rem; border: 1px solid var(--border-color); background: rgba(17, 24, 39, 0.4); backdrop-filter: blur(10px); overflow: hidden; border-radius: var(--radius-md);">
+                        <div class="tradingview-widget-container">
+                            <div class="tradingview-widget-container__widget"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+                            {
+                            "symbols": [
+                                {
+                                "proName": "FOREXCOM:USDTRY",
+                                "title": "USD/TRY"
+                                },
+                                {
+                                "proName": "FOREXCOM:EURTRY",
+                                "title": "EUR/TRY"
+                                },
+                                {
+                                "proName": "BINANCE:BTCUSDT",
+                                "title": "Bitcoin"
+                                },
+                                {
+                                "proName": "BINANCE:ETHUSDT",
+                                "title": "Ethereum"
+                                },
+                                {
+                                "proName": "OANDA:XAUUSD",
+                                "title": "Ons Altın"
+                                },
+                                {
+                                "proName": "INDEX:XU100",
+                                "title": "BIST 100"
+                                }
+                            ],
+                            "showSymbolLogo": true,
+                            "isTransparent": true,
+                            "displayMode": "adaptive",
+                            "colorTheme": "dark",
+                            "locale": "tr"
+                            }
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card main-chart-card" style="display: flex; flex-direction: column; height: 380px;">
+                            <div class="card-header" style="margin-bottom: 0.5rem;">
+                                <h3>Borsa İstanbul (BIST:XU100) Canlı Grafik</h3>
+                            </div>
+                            <div class="chart-container" style="flex-grow: 1; height: 100%; position: relative;">
+                                <!-- TradingView Widget BEGIN -->
+                                <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                                    <div id="tradingview_bist" style="height: 100%; width: 100%;"></div>
+                                </div>
+                                <!-- TradingView Widget END -->
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card quick-widgets-card">
+                            <div class="quick-widget currency-converter-widget" id="converter-container" style="display: flex; flex-direction: column; gap: 0.75rem; transition: all 0.3s ease; border-radius: var(--radius-md); padding: 0.25rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="font-size: 1.25rem;">💱</span>
+                                        <h3 style="margin: 0;">Döviz & Kripto Çevirici</h3>
+                                    </div>
+                                    <span class="converter-status-badge" id="converter-status" style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 500;">
+                                        Canlı Kurlar
+                                    </span>
+                                </div>
+
+                                <div class="converter-form" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                                    <!-- Amount input -->
+                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                        <label style="font-size: 0.75rem; color: var(--text-secondary);">Miktar</label>
+                                        <input type="number" id="converter-amount" value="100" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem 0.75rem; color: var(--text-primary); font-size: 0.9rem; outline: none; width: 100%;" />
+                                    </div>
+
+                                    <!-- Currency selectors & swap button -->
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <label style="font-size: 0.75rem; color: var(--text-secondary);">Kaynak</label>
+                                            <select id="converter-from" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; color: var(--text-primary); font-size: 0.85rem; outline: none;">
+                                                <option value="USD">USD ($)</option>
+                                                <option value="EUR">EUR (€)</option>
+                                                <option value="BTC">BTC (₿)</option>
+                                                <option value="ETH">ETH (Ξ)</option>
+                                                <option value="TRY" selected>TRY (₺)</option>
+                                            </select>
+                                        </div>
+
+                                        <button type="button" id="converter-swap" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-primary); margin-top: 1rem; transition: background 0.2s;" title="Ters Çevir">🔁</button>
+
+                                        <div style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                                            <label style="font-size: 0.75rem; color: var(--text-secondary);">Hedef</label>
+                                            <select id="converter-to" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; color: var(--text-primary); font-size: 0.85rem; outline: none;">
+                                                <option value="USD" selected>USD ($)</option>
+                                                <option value="EUR">EUR (€)</option>
+                                                <option value="BTC">BTC (₿)</option>
+                                                <option value="ETH">ETH (Ξ)</option>
+                                                <option value="TRY">TRY (₺)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Result Field -->
+                                    <div class="converter-result-box" style="margin-top: 0.4rem; background: rgba(0, 0, 0, 0.15); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 0.6rem; text-align: center;">
+                                        <div id="converter-rate-info" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem;">1 TRY = 0.029 USD</div>
+                                        <div id="converter-result-value" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-color);">2.90 USD</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="card-divider">
+                            <div class="quick-widget">
+                                <h3>Son İşlemler</h3>
+                                <ul class="transaction-list-mini" id="recent-transactions-list">
+                                    <li class="empty-msg">İşlem kaydı bulunmuyor.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PANEL: TASKS -->
+                <section class="tab-panel" id="panel-tasks">
+                    <div class="todo-layout">
+                        <div class="todo-form-container card-panel">
+                            <h3>Yeni Görev Ekle</h3>
+                            <form id="todo-form" class="dashboard-form">
+                                <div class="form-group">
+                                    <label for="task-input">Görev Başlığı</label>
+                                    <input type="text" id="task-input" required placeholder="Örn: Raporu hazırla">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="task-priority">Öncelik</label>
+                                        <select id="task-priority">
+                                            <option value="low">Düşük</option>
+                                            <option value="medium" selected>Orta</option>
+                                            <option value="high">Yüksek</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="task-category">Kategori</label>
+                                        <select id="task-category">
+                                            <option value="work">İş</option>
+                                            <option value="personal">Kişisel</option>
+                                            <option value="shopping">Alışveriş</option>
+                                            <option value="other">Diğer</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+                            
+                            <!-- Pomodoro Zamanlayıcı -->
+                            <div class="pomodoro-container">
+                                <hr class="card-divider">
+                                <h3>Pomodoro Sayacı</h3>
+                                <div class="pomodoro-widget">
+                                    <div class="pomodoro-timer-circle">
+                                        <svg class="progress-ring" width="120" height="120">
+                                            <circle class="progress-ring-circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" r="52" cx="60" cy="60"/>
+                                            <circle class="progress-ring-circle" id="pomodoro-progress" stroke="var(--accent-color)" stroke-width="6" fill="transparent" r="52" cx="60" cy="60"/>
+                                        </svg>
+                                        <div class="timer-display" id="pomodoro-time">25:00</div>
+                                    </div>
+                                    <div class="pomodoro-controls">
+                                        <button type="button" class="btn btn-sm btn-secondary" id="pomodoro-start">Başlat</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" id="pomodoro-reset">Sıfırla</button>
+                                    </div>
+                                    <div class="pomodoro-mode-selector">
+                                        <button type="button" class="btn btn-xs active" id="mode-work">Çalışma</button>
+                                        <button type="button" class="btn btn-xs" id="mode-break">Mola</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="todo-list-container card-panel">
+                            <div class="list-header">
+                                <h3>Görev Listesi</h3>
+                                <div class="filters">
+                                    <button class="filter-btn active" data-filter="all">Tümü</button>
+                                    <button class="filter-btn" data-filter="pending">Yapılacaklar</button>
+                                    <button class="filter-btn" data-filter="completed">Tamamlananlar</button>
+                                </div>
+                            </div>
+                            <ul class="todo-list" id="todo-list">
+                                <!-- Dynamic tasks -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PANEL: FINANCE -->
+                <section class="tab-panel" id="panel-finance">
+                    <div class="finance-grid">
+                        <div class="card-panel finance-summary">
+                            <h3>Bütçe Özeti</h3>
+                            <div class="finance-summary-cards">
+                                <div class="fin-card income">
+                                    <span>Toplam Gelir</span>
+                                    <h4 id="fin-income-total">₺0.00</h4>
+                                </div>
+                                <div class="fin-card expense">
+                                    <span>Toplam Gider</span>
+                                    <h4 id="fin-expense-total">₺0.00</h4>
+                                </div>
+                            </div>
+                            <div class="finance-charts-wrapper">
+                                <div class="finance-chart-container">
+                                    <canvas id="financePieChart"></canvas>
+                                </div>
+                                <div class="finance-chart-container">
+                                    <canvas id="financeCategoryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-panel finance-actions">
+                            <h3>İşlem Ekle</h3>
+                            <form id="finance-form" class="dashboard-form">
+                                <div class="form-group">
+                                    <label for="fin-title">Açıklama</label>
+                                    <input type="text" id="fin-title" required placeholder="Örn: Maaş, Market vb.">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="fin-amount">Tutar (₺)</label>
+                                        <input type="number" id="fin-amount" required min="0.01" step="0.01" placeholder="0.00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fin-type">Tür</label>
+                                        <select id="fin-type">
+                                            <option value="income">Gelir</option>
+                                            <option value="expense" selected>Gider</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fin-category">Kategori</label>
+                                    <select id="fin-category">
+                                        <option value="fatura">Fatura</option>
+                                        <option value="market">Market / Gıda</option>
+                                        <option value="kira">Kira</option>
+                                        <option value="eglence">Eğlence / Sosyal</option>
+                                        <option value="maas">Maaş</option>
+                                        <option value="diger" selected>Diğer</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">İşlem Ekle</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Gelir Gider Çizgi Grafik Analizi -->
+                    <div class="card-panel finance-trend-chart-card">
+                        <h3>Gelir-Gider Zaman Analizi</h3>
+                        <div class="finance-trend-container">
+                            <canvas id="financeTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card-panel finance-ledger">
+                        <div class="ledger-header">
+                            <h3>Tüm İşlemler</h3>
+                            <div class="ledger-controls">
+                                <input type="text" id="finance-search" placeholder="İşlemlerde ara...">
+                                <select id="finance-filter-type">
+                                    <option value="all">Tüm İşlemler</option>
+                                    <option value="income">Sadece Gelirler</option>
+                                    <option value="expense">Sadece Giderler</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="ledger-table">
+                                <thead>
+                                    <tr>
+                                        <th>Açıklama</th>
+                                        <th>Kategori</th>
+                                        <th>Tür</th>
+                                        <th>Tutar</th>
+                                        <th>Tarih</th>
+                                        <th>Aksiyon</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ledger-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PANEL: NOTES -->
+                <section class="tab-panel" id="panel-notes">
+                    <div class="notes-layout">
+                        <div class="card-panel notes-sidebar">
+                            <button class="btn btn-primary btn-block" id="new-note-btn">+ Yeni Not Ekle</button>
+                            <ul class="notes-list" id="notes-sidebar-list">
+                                <!-- Dynamic note titles -->
+                            </ul>
+                        </div>
+                        <div class="card-panel note-editor" id="note-editor-container">
+                            <div class="note-editor-header">
+                                <input type="text" id="note-title-input" placeholder="Başlıksız Not" disabled>
+                                <span class="note-save-indicator" id="note-save-status">Kaydedildi</span>
+                            </div>
+                            <textarea id="note-body-input" placeholder="Not yazmaya başlayın..." disabled></textarea>
+                            <div class="note-editor-footer">
+                                <div class="note-color-picker" id="note-color-picker">
+                                    <button class="color-dot active" data-color="default" style="background-color: #6b7280;" title="Varsayılan"></button>
+                                    <button class="color-dot" data-color="red" style="background-color: #ef4444;" title="Önemli"></button>
+                                    <button class="color-dot" data-color="green" style="background-color: #10b981;" title="Fikir"></button>
+                                    <button class="color-dot" data-color="blue" style="background-color: #3b82f6;" title="İş"></button>
+                                    <button class="color-dot" data-color="yellow" style="background-color: #f59e0b;" title="Kişisel"></button>
+                                </div>
+                                <button class="btn btn-danger" id="delete-note-btn" disabled>Notu Sil</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PANEL: PRODUCTS (ENVANTER) -->
+                <section class="tab-panel" id="panel-products">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%; align-items: start;">
+                        <!-- Sol Sütun: Form Ekleme -->
+                        <aside class="card-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--card-shadow);">
+                            <h3 style="font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Yeni Ürün Ekle</h3>
+                            <form id="product-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="prod-name" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Ürün Adı</label>
+                                    <input type="text" id="prod-name" required placeholder="Örn: Kablosuz Mouse" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition);">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prod-category" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Kategori</label>
+                                    <select id="prod-category" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition); cursor: pointer;">
+                                        <option value="Elektronik">Elektronik</option>
+                                        <option value="Ofis/Kırtasiye">Ofis/Kırtasiye</option>
+                                        <option value="Giyim">Giyim</option>
+                                        <option value="Ev/Yaşam">Ev/Yaşam</option>
+                                        <option value="Diğer">Diğer</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="prod-price" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Fiyat (₺)</label>
+                                    <input type="number" id="prod-price" required min="0.01" step="0.01" placeholder="0.00" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition);">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prod-stock" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Stok Adedi</label>
+                                    <input type="number" id="prod-stock" required min="0" step="1" placeholder="0" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition);">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block" style="width: 100%; font-weight: 600; padding: 0.75rem; border-radius: var(--radius-sm); cursor: pointer; border: none; transition: var(--transition); background: var(--accent-color); color: white;">Ürün Ekle</button>
+                            </form>
+                        </aside>
+
+                        <!-- Sağ Sütun: Liste ve Araçlar -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Filtreler ve Veri Eylemleri -->
+                            <div class="card-panel" style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; box-shadow: var(--card-shadow);">
+                                <div style="display: flex; gap: 1rem; flex: 1; min-width: 280px;">
+                                    <input type="text" id="search-input" placeholder="Ürün adı ile ara..." style="flex: 1; max-width: 300px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.65rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition);">
+                                    <select id="filter-category" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.65rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition); cursor: pointer;">
+                                        <option value="Hepsi">Tüm Kategoriler</option>
+                                        <option value="Elektronik">Elektronik</option>
+                                        <option value="Ofis/Kırtasiye">Ofis/Kırtasiye</option>
+                                        <option value="Giyim">Giyim</option>
+                                        <option value="Ev/Yaşam">Ev/Yaşam</option>
+                                        <option value="Diğer">Diğer</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 0.75rem;">
+                                    <button class="btn btn-secondary" id="export-json-btn" title="Verileri JSON olarak indir" style="padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white;">Veriyi Çek (JSON)</button>
+                                    <label for="import-file" class="btn btn-secondary" title="JSON yükle" style="padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; display: flex; align-items: center; justify-content: center; margin: 0;">Veri Yükle</label>
+                                    <input type="file" id="import-file" accept=".json" style="display: none;">
+                                </div>
+                            </div>
+
+                            <!-- Ürün Tablosu -->
+                            <div class="card-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--card-shadow); overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-secondary); font-size: 0.9rem;">
+                                            <th style="padding: 0.75rem 1rem; font-weight: 600;">Ürün Adı</th>
+                                            <th style="padding: 0.75rem 1rem; font-weight: 600;">Kategori</th>
+                                            <th style="padding: 0.75rem 1rem; font-weight: 600;">Fiyat</th>
+                                            <th style="padding: 0.75rem 1rem; font-weight: 600;">Stok</th>
+                                            <th style="padding: 0.75rem 1rem; font-weight: 600;">Ekleyen</th>
+                                            <th style="padding: 0.75rem 1rem; font-weight: 600; text-align: right;">İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="product-table-body">
+                                        <!-- JS dinamik olarak dolduracak -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PANEL: SETTINGS -->
+                <section class="tab-panel" id="panel-settings">
+                    <div class="card-panel settings-container">
+                        <h3>Profil ve Kişiselleştirme</h3>
+                        <form id="settings-form" class="dashboard-form">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                                <div class="form-group">
+                                    <label for="settings-username">Adınız Soyadınız</label>
+                                    <input type="text" id="settings-username" placeholder="Ege Kolatan">
+                                </div>
+                                <div class="form-group">
+                                    <label for="settings-city">Hava Durumu Şehri</label>
+                                    <input type="text" id="settings-city" placeholder="Örn: İzmir">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Profil Avatarı</label>
+                                <div class="avatar-selector" id="avatar-picker">
+                                    <div class="avatar-option" data-char="E">E</div>
+                                    <div class="avatar-option" data-char="K">K</div>
+                                    <div class="avatar-option" data-char="👤">👤</div>
+                                    <div class="avatar-option" data-char="🚀">🚀</div>
+                                    <div class="avatar-option" data-char="🎯">🎯</div>
+                                    <div class="avatar-option" data-char="💻">💻</div>
+                                    <div class="avatar-option" data-char="🐱">🐱</div>
+                                    <div class="avatar-option" data-char="🦁">🦁</div>
+                                    <div class="avatar-option" data-char="🦊">🦊</div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Veya Kendi Resminizi Yükleyin</span>
+                                    <label for="settings-avatar-file" class="custom-file-upload" style="display: flex; align-items: center; gap: 0.75rem; border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 0.85rem 1rem; cursor: pointer; background: rgba(255, 255, 255, 0.02); max-width: 320px;">
+                                        <span style="font-size: 1.4rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">📷</span>
+                                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem;">
+                                            <span style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600;">Profil resmi seçin</span>
+                                            <span style="font-size: 0.7rem; color: var(--text-muted);">PNG, JPG veya GIF</span>
+                                        </div>
+                                    </label>
+                                    <input type="file" id="settings-avatar-file" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Tema Rengi Seçin</label>
+                                <div class="accent-color-picker">
+                                    <button type="button" class="accent-btn" data-color="#3b82f6" style="background-color: #3b82f6;" title="Mavi"></button>
+                                    <button type="button" class="accent-btn" data-color="#0ea5e9" style="background-color: #0ea5e9;" title="Gök Mavisi"></button>
+                                    <button type="button" class="accent-btn" data-color="#06b6d4" style="background-color: #06b6d4;" title="Turkuaz"></button>
+                                    <button type="button" class="accent-btn" data-color="#14b8a6" style="background-color: #14b8a6;" title="Teal"></button>
+                                    <button type="button" class="accent-btn" data-color="#10b981" style="background-color: #10b981;" title="Zümrüt Yeşil"></button>
+                                    <button type="button" class="accent-btn" data-color="#22c55e" style="background-color: #22c55e;" title="Yeşil"></button>
+                                    <button type="button" class="accent-btn" data-color="#84cc16" style="background-color: #84cc16;" title="Fıstık Yeşili"></button>
+                                    <button type="button" class="accent-btn" data-color="#eab308" style="background-color: #eab308;" title="Sarı"></button>
+                                    <button type="button" class="accent-btn" data-color="#f59e0b" style="background-color: #f59e0b;" title="Amber"></button>
+                                    <button type="button" class="accent-btn" data-color="#f97316" style="background-color: #f97316;" title="Turuncu"></button>
+                                    <button type="button" class="accent-btn" data-color="#f43f5e" style="background-color: #f43f5e;" title="Gül Rengi"></button>
+                                    <button type="button" class="accent-btn" data-color="#ef4444" style="background-color: #ef4444;" title="Kırmızı"></button>
+                                    <button type="button" class="accent-btn" data-color="#b91c1c" style="background-color: #b91c1c;" title="Koyu Kırmızı"></button>
+                                    <button type="button" class="accent-btn" data-color="#ec4899" style="background-color: #ec4899;" title="Pembe"></button>
+                                    <button type="button" class="accent-btn" data-color="#d946ef" style="background-color: #d946ef;" title="Fuşya"></button>
+                                    <button type="button" class="accent-btn" data-color="#a855f7" style="background-color: #a855f7;" title="Eflatun"></button>
+                                    <button type="button" class="accent-btn" data-color="#8b5cf6" style="background-color: #8b5cf6;" title="Mor"></button>
+                                    <button type="button" class="accent-btn" data-color="#6366f1" style="background-color: #6366f1;" title="İndigo"></button>
+                                    <button type="button" class="accent-btn" data-color="#475569" style="background-color: #475569;" title="Slate Gri"></button>
+                                    <button type="button" class="accent-btn" data-color="#78350f" style="background-color: #78350f;" title="Kahverengi"></button>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                        </form>
+
+                        <hr class="card-divider" style="margin: 2rem 0; border-color: rgba(255,255,255,0.05);">
+
+                        <div class="danger-zone-card" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-md); padding: 1.5rem; margin-top: 1.5rem;">
+                            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                                    ⚠️
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="color: #ef4444; font-size: 1.05rem; margin: 0 0 0.5rem 0; font-family: var(--font-title); font-weight: 600;">Tehlikeli Bölge: Veri Yönetimi</h4>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 1.2rem 0;">
+                                        Bu işlem hesabınıza ait tüm verileri (görevler, bütçe işlemleri, notlar ve profil tercihleri) kalıcı olarak sıfırlayacak ve oturumunuzu kapatacaktır. Bu işlem geri alınamaz.
+                                    </p>
+                                    <button class="btn btn-danger" id="clear-all-data-btn" style="background-color: #ef4444; border-color: #ef4444; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.85rem; padding: 0.6rem 1.2rem; transition: all 0.2s ease;">
+                                        <span>🗑️</span> Hesabımı ve Verileri Sıfırla
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Konfeti Efekti İçin Canvas -->
+    <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999;"></canvas>
+
+    <!-- Klavye Kısayolları Yardım Modalı -->
+    <div class="shortcut-modal" id="shortcut-modal">
+        <div class="shortcut-modal-content">
+            <div class="shortcut-modal-header">
+                <h3>⌨️ Klavye Kısayolları Kılavuzu</h3>
+                <button class="shortcut-close-btn" id="shortcut-close">&times;</button>
+            </div>
+            <div class="shortcut-table-container">
+                <table class="shortcut-table">
+                    <thead>
+                        <tr>
+                            <th>Kısayol</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><kbd>1</kbd> veya <kbd>O</kbd></td><td>Genel Bakış Sekmesine Git</td></tr>
+                        <tr><td><kbd>2</kbd> veya <kbd>T</kbd></td><td>Görevler Sekmesine Git</td></tr>
+                        <tr><td><kbd>3</kbd> veya <kbd>F</kbd></td><td>Bütçe Sekmesine Git</td></tr>
+                        <tr><td><kbd>4</kbd> veya <kbd>N</kbd></td><td>Notlar Sekmesine Git</td></tr>
+                        <tr><td><kbd>5</kbd> veya <kbd>S</kbd></td><td>Ayarlar Sekmesine Git</td></tr>
+                        <tr><td><kbd>P</kbd></td><td>Pomodoro Zamanlayıcıyı Başlat / Duraklat</td></tr>
+                        <tr><td><kbd>?</kbd></td><td>Kısayol Kılavuzunu Aç / Kapat</td></tr>
+                        <tr><td><kbd>Esc</kbd></td><td>Kılavuzu Kapat</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. ÜRÜN DÜZENLEME MODAL PENCERESİ -->
+    <div class="modal-wrapper" id="edit-product-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div class="modal-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); width: 100%; max-width: 400px; padding: 2rem; box-shadow: var(--card-shadow); display: flex; flex-direction: column; gap: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <h3 style="font-family: var(--font-title); font-weight: 700; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Ürünü Düzenle</h3>
+                <button type="button" style="background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer;" id="close-prod-modal-btn">&times;</button>
+            </div>
+            <form id="edit-product-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="hidden" id="edit-prod-id">
+                <div class="form-group">
+                    <label for="edit-prod-name" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Ürün Adı</label>
+                    <input type="text" id="edit-prod-name" required style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition);">
+                </div>
+                <div class="form-group">
+                    <label for="edit-prod-category" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Kategori</label>
+                    <select id="edit-prod-category" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition); cursor: pointer;">
+                        <option value="Elektronik">Elektronik</option>
+                        <option value="Ofis/Kırtasiye">Ofis/Kırtasiye</option>
+                        <option value="Giyim">Giyim</option>
+                        <option value="Ev/Yaşam">Ev/Yaşam</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-prod-price" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Fiyat (₺)</label>
+                    <input type="number" id="edit-prod-price" required min="0.01" step="0.01" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition);">
+                </div>
+                <div class="form-group">
+                    <label for="edit-prod-stock" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Stok Adedi</label>
+                    <input type="number" id="edit-prod-stock" required min="0" step="1" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: var(--radius-sm); color: white; outline: none; transition: var(--transition);">
+                </div>
+                <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                    <button type="button" class="btn btn-secondary" id="cancel-prod-modal-btn">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="app.js"></script>
+</body>
+</html>
