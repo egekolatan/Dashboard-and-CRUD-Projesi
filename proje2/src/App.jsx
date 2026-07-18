@@ -9,6 +9,8 @@ import LoginModal from './components/LoginModal';
 import ProfileDashboard from './components/ProfileDashboard';
 import PaymentModal from './components/PaymentModal';
 import MobileMenu from './components/MobileMenu';
+import OrderTracker from './components/OrderTracker';
+import { translations } from './services/translations';
 import { simulatedLogin, simulatedRegister, simulatedAddBalance, simulatedCheckout } from './services/api';
 import { Search } from 'lucide-react';
 
@@ -334,6 +336,9 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [loginInitialMode, setLoginInitialMode] = useState('login');
 
+  const [lang, setLang] = useState('tr');
+  const [activeOrder, setActiveOrder] = useState(null);
+
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [apiLoading, setApiLoading] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -458,8 +463,29 @@ export default function App() {
     localStorage.removeItem('kolatan_current_user');
   };
 
+  const getLocalizedProduct = (p) => {
+    return {
+      ...p,
+      name: translations[lang][`prod_${p.id}_name`] || p.name,
+      description: translations[lang][`prod_${p.id}_desc`] || p.description
+    };
+  };
+
+  const getCategoryName = (catId) => {
+    const names = {
+      all: lang === 'tr' ? 'Tüm Menü' : 'All Menu',
+      'hot-coffee': lang === 'tr' ? 'Sıcak Kahveler' : 'Hot Coffees',
+      'cold-coffee': lang === 'tr' ? 'Soğuk Kahveler' : 'Cold Coffees',
+      matcha: lang === 'tr' ? 'Matcha Bölümü' : 'Matcha Section',
+      frappuccino: 'Frappuccino®',
+      tea: lang === 'tr' ? 'Sıcak & Soğuk Çaylar' : 'Hot & Iced Teas',
+      bakery: lang === 'tr' ? 'Fırından & Yiyecek' : 'Bakery & Food'
+    };
+    return names[catId] || catId;
+  };
+
   // Filter products based on category and search query
-  const filteredProducts = PRODUCTS.filter((product) => {
+  const filteredProducts = PRODUCTS.map(getLocalizedProduct).filter((product) => {
     const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           product.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -470,7 +496,10 @@ export default function App() {
     if (!currentUser) {
       setLoginInitialMode('login');
       setIsLoginOpen(true);
-      alert('Ürünleri kişiselleştirebilmek ve sipariş verebilmek için lütfen önce giriş yapın.');
+      const alertMsg = lang === 'tr'
+        ? 'Ürünleri kişiselleştirebilmek ve sipariş verebilmek için lütfen önce giriş yapın.'
+        : 'Please sign in first to customize products and place orders.';
+      alert(alertMsg);
       return;
     }
     setSelectedProduct(product);
@@ -515,7 +544,16 @@ export default function App() {
     setOrderHistory(updatedOrders);
     localStorage.setItem(currentUser.email + '_orders', JSON.stringify(updatedOrders));
 
-    alert(`Siparişiniz Başarıyla Alındı!\nÖdenen Tutar: ₺${total.toFixed(2)}\nKazandığınız Yıldız: +${result.order.starsEarned}\nKeyifli kahveler! ☕`);
+    // Clear cart items
+    setCartItems([]);
+
+    // Trigger Live Order Tracker
+    setActiveOrder(result.order);
+
+    const alertMsg = lang === 'tr' 
+      ? `Siparişiniz Başarıyla Alındı!\nÖdenen Tutar: ₺${total.toFixed(2)}\nKazandığınız Yıldız: +${result.order.starsEarned}\nKeyifli kahveler! ☕`
+      : `Order Placed Successfully!\nAmount Paid: ₺${total.toFixed(2)}\nStars Earned: +${result.order.starsEarned}\nEnjoy! ☕`;
+    alert(alertMsg);
     return true;
   };
 
@@ -533,12 +571,14 @@ export default function App() {
         onLogout={handleLogout}
         theme={theme}
         toggleTheme={toggleTheme}
+        lang={lang}
+        setLang={setLang}
       />
 
       {activeTab === 'menu' && (
         <>
           <div className="sb-subnav">
-            <span className="sb-subnav-title">Kategori Seçin</span>
+            <span className="sb-subnav-title">{lang === 'tr' ? 'Kategori Seçin' : 'Select Category'}</span>
             {CATEGORIES.map((c) => (
               <button 
                 key={c.id} 
@@ -552,7 +592,7 @@ export default function App() {
                 }}
                 onClick={() => setActiveCategory(c.id)}
               >
-                {c.name}
+                {getCategoryName(c.id)}
               </button>
             ))}
           </div>
@@ -572,10 +612,10 @@ export default function App() {
           }}>
             <div style={{ zIndex: 2, maxWidth: '50%' }}>
               <h1 style={{ color: 'white', fontSize: '38px', margin: '0 0 10px 0', fontFamily: 'var(--font-heading)' }}>
-                Yazın En Canlandırıcı Tatları
+                {lang === 'tr' ? 'Yazın En Canlandırıcı Tatları' : 'Refreshing Flavors of Summer'}
               </h1>
               <p style={{ fontSize: '15px', color: '#b9dfd5', marginBottom: '20px' }}>
-                Kolatan özel soğuk demlenmiş Cold Brew ve Frappuccino lezzetleriyle sıcak günlerin tadını çıkarın.
+                {lang === 'tr' ? 'Kolatan özel soğuk demlenmiş Cold Brew ve Frappuccino lezzetleriyle sıcak günlerin tadını çıkarın.' : 'Enjoy hot summer days with special Kolatan cold brewed Cold Brew and Frappuccino flavors.'}
               </p>
             </div>
             <div style={{
@@ -606,19 +646,20 @@ export default function App() {
               onSelectCategory={setActiveCategory}
               isOpen={isSidebarOpen}
               onClose={() => setIsSidebarOpen(false)}
+              lang={lang}
             />
 
             <main className="sb-content">
               <div className="sb-content-header">
                 <h1 className="sb-content-title">
-                  {CATEGORIES.find(c => c.id === activeCategory)?.name || 'Menü'}
+                  {getCategoryName(activeCategory)}
                 </h1>
                 
                 <div className="sb-search-container">
                   <Search size={18} className="sb-search-icon" />
                   <input 
                     type="text" 
-                    placeholder="Menüde ara..." 
+                    placeholder={lang === 'tr' ? 'Menüde ara...' : 'Search in menu...'} 
                     className="sb-search-input"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -628,7 +669,7 @@ export default function App() {
 
               {filteredProducts.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--sb-text-muted)' }}>
-                  Aramanızla eşleşen ürün bulunamadı.
+                  {lang === 'tr' ? 'Aramanızla eşleşen ürün bulunamadı.' : 'No products found matching your search.'}
                 </div>
               ) : (
                 <div className="sb-products-grid">
@@ -680,33 +721,33 @@ export default function App() {
       {activeTab === 'gift' && (
         <div style={{ padding: '60px 40px', maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
           <h1 style={{ color: 'var(--sb-dark-green)', fontSize: '42px', marginBottom: '16px', fontFamily: 'var(--font-heading)' }}>
-            Sevdiklerinize Kahve Hediye Edin
+            {lang === 'tr' ? 'Sevdiklerinize Kahve Hediye Edin' : 'Gift Coffee to Your Loved Ones'}
           </h1>
           <p style={{ fontSize: '18px', color: 'var(--sb-text-muted)', marginBottom: '40px' }}>
-            Kolatan e-Gift Kartları ile arkadaşlarınıza ve ailenize harika bir kahve sürprizi gönderin.
+            {lang === 'tr' ? 'Kolatan e-Gift Kartları ile arkadaşlarınıza ve ailenize harika bir kahve sürprizi gönderin.' : 'Send a wonderful coffee surprise to your friends and family with Kolatan e-Gift Cards.'}
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px', margin: '40px 0' }}>
             <div style={{ background: 'linear-gradient(135deg, #006241 0%, #1e3932 100%)', borderRadius: '16px', height: '180px', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'white', textAlign: 'left', boxShadow: 'var(--sb-shadow-md)' }}>
               <span style={{ fontSize: '20px', fontWeight: 'bold', letterSpacing: '2px' }}>KOLATAN®</span>
-              <span style={{ fontSize: '14px', opacity: 0.8 }}>Teşekkür Ederim</span>
+              <span style={{ fontSize: '14px', opacity: 0.8 }}>{lang === 'tr' ? 'Teşekkür Ederim' : 'Thank You'}</span>
             </div>
             <div style={{ background: 'linear-gradient(135deg, #cba258 0%, #a27a3c 100%)', borderRadius: '16px', height: '180px', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'white', textAlign: 'left', boxShadow: 'var(--sb-shadow-md)' }}>
               <span style={{ fontSize: '20px', fontWeight: 'bold', letterSpacing: '2px' }}>KOLATAN®</span>
-              <span style={{ fontSize: '14px', opacity: 0.8 }}>Mutlu Yıllar</span>
+              <span style={{ fontSize: '14px', opacity: 0.8 }}>{lang === 'tr' ? 'Mutlu Yıllar' : 'Happy New Year'}</span>
             </div>
             <div style={{ background: 'linear-gradient(135deg, #FF5252 0%, #FF1744 100%)', borderRadius: '16px', height: '180px', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'white', textAlign: 'left', boxShadow: 'var(--sb-shadow-md)' }}>
               <span style={{ fontSize: '20px', fontWeight: 'bold', letterSpacing: '2px' }}>KOLATAN®</span>
-              <span style={{ fontSize: '14px', opacity: 0.8 }}>Doğum Günün Kutlu Olsun</span>
+              <span style={{ fontSize: '14px', opacity: 0.8 }}>{lang === 'tr' ? 'Doğum Günün Kutlu Olsun' : 'Happy Birthday'}</span>
             </div>
           </div>
 
-          <button className="sb-btn-solid" style={{ padding: '14px 40px', fontSize: '16px' }}>Hediye Kartı Gönder</button>
+          <button className="sb-btn-solid" style={{ padding: '14px 40px', fontSize: '16px' }}>{lang === 'tr' ? 'Hediye Kartı Gönder' : 'Send a Gift Card'}</button>
         </div>
       )}
 
       {activeTab === 'stores' && (
-        <StoreLocator />
+        <StoreLocator lang={lang} />
       )}
 
       {activeTab === 'profile' && currentUser && (
@@ -715,19 +756,20 @@ export default function App() {
           onAddBalance={handleAddBalance} 
           orderHistory={orderHistory} 
           onAwardPrize={handleAwardPrize}
+          lang={lang}
         />
       )}
 
       {/* Footer */}
       <footer className="sb-footer">
         <div className="sb-footer-links">
-          <a href="#about">Hakkımızda</a>
-          <a href="#careers">Kariyer</a>
-          <a href="#contact">İletişim</a>
-          <a href="#privacy">Gizlilik Politikası</a>
-          <a href="#terms">Kullanım Koşulları</a>
+          <a href="#about">{lang === 'tr' ? 'Hakkımızda' : 'About Us'}</a>
+          <a href="#careers">{lang === 'tr' ? 'Kariyer' : 'Careers'}</a>
+          <a href="#contact">{lang === 'tr' ? 'İletişim' : 'Contact'}</a>
+          <a href="#privacy">{lang === 'tr' ? 'Gizlilik Politikası' : 'Privacy Policy'}</a>
+          <a href="#terms">{lang === 'tr' ? 'Kullanım Koşulları' : 'Terms of Use'}</a>
         </div>
-        <p>© {new Date().getFullYear()} Kolatan Coffee Company. Tüm hakları saklıdır. Bu bir simülasyon projesidir.</p>
+        <p>© {new Date().getFullYear()} Kolatan Coffee Company. {lang === 'tr' ? 'Tüm hakları saklıdır. Bu bir simülasyon projesidir.' : 'All rights reserved. This is a simulation project.'}</p>
       </footer>
 
       {/* Modal Customizer */}
@@ -736,6 +778,7 @@ export default function App() {
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           onAddToBag={handleAddToBag}
+          lang={lang}
         />
       )}
 
@@ -746,6 +789,7 @@ export default function App() {
         onRemoveItem={handleRemoveCartItem}
         onClearCart={() => setCartItems([])}
         onCheckout={handleCheckout}
+        lang={lang}
       />
 
       <LoginModal 
@@ -754,6 +798,7 @@ export default function App() {
         initialMode={loginInitialMode}
         onLogin={handleLogin}
         onRegister={handleRegister}
+        lang={lang}
       />
 
       <MobileMenu 
@@ -767,6 +812,8 @@ export default function App() {
         onLogout={handleLogout}
         theme={theme}
         toggleTheme={toggleTheme}
+        lang={lang}
+        setLang={setLang}
       />
 
       <PaymentModal 
@@ -774,6 +821,13 @@ export default function App() {
         onClose={() => setIsPaymentOpen(false)}
         onConfirm={handlePaymentSuccess}
         amount={pendingAddAmount}
+        lang={lang}
+      />
+
+      <OrderTracker 
+        lang={lang}
+        activeOrder={activeOrder}
+        onClose={() => setActiveOrder(null)}
       />
 
       {apiLoading && (
@@ -793,7 +847,9 @@ export default function App() {
           gap: '16px'
         }}>
           <div className="sb-logo-circle" style={{ animation: 'spin 1.5s linear infinite', width: '60px', height: '60px', fontSize: '32px' }}>★</div>
-          <span style={{ fontWeight: '600', fontSize: '15px', fontFamily: 'var(--font-heading)' }}>Lütfen Bekleyin...</span>
+          <span style={{ fontWeight: '600', fontSize: '15px', fontFamily: 'var(--font-heading)' }}>
+            {translations[lang]?.loading || 'Lütfen Bekleyin...'}
+          </span>
         </div>
       )}
     </>

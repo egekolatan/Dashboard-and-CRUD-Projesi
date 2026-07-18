@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { X, CreditCard, ShieldCheck } from 'lucide-react';
+import { translations } from '../services/translations';
 
-export default function PaymentModal({ isOpen, onClose, onConfirm, amount }) {
+export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang }) {
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const t = translations[lang] || translations.tr;
 
   if (!isOpen) return null;
 
@@ -31,177 +34,167 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount }) {
 
   const handleExpiryChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
-    if (value.length >= 2) {
+    if (value.length > 2) {
       setExpiry(value.substring(0, 2) + '/' + value.substring(2, 4));
     } else {
       setExpiry(value);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleCvcChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').substring(0, 3);
+    setCvc(value);
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
+    if (cardNumber.length < 19 || !cardName.trim() || expiry.length < 5 || cvc.length < 3) {
+      alert(lang === 'tr' ? 'Lütfen tüm kart bilgilerini eksiksiz girin.' : 'Please fill in all card details.');
+      return;
+    }
+
     setLoading(true);
-    // Simulate secure 3D Secure bank authorization delay
+    // Simulate 3D Secure bank routing latency
     setTimeout(() => {
       setLoading(false);
       onConfirm(amount);
-      onClose();
       setCardNumber('');
       setCardName('');
       setExpiry('');
       setCvc('');
-    }, 1500);
+      onClose();
+    }, 2000);
   };
 
   return (
-    <div className="sb-modal-overlay" onClick={onClose} style={{ zIndex: 120 }}>
-      <div 
-        className="sb-modal" 
-        onClick={(e) => e.stopPropagation()} 
-        style={{ maxWidth: '450px', height: 'auto', maxHeight: '90vh', borderRadius: '16px', flexDirection: 'column' }}
-      >
-        <button className="sb-modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
-
-        <div style={{ padding: '30px 40px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '20px', color: 'var(--sb-dark-green)', marginBottom: '4px' }}>
-            Güvenli Ödeme Geçidi
+    <>
+      <div className="sb-modal-overlay" style={{ zIndex: 110 }} onClick={onClose}></div>
+      <div className="sb-modal" style={{ zIndex: 111, maxWidth: '420px' }}>
+        <div className="sb-modal-header">
+          <h2 className="sb-modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CreditCard size={22} className="sb-green-icon" />
+            <span>{lang === 'tr' ? 'Güvenli Ödeme' : 'Secure Payment'}</span>
           </h2>
-          <p style={{ fontSize: '13px', color: 'var(--sb-text-muted)', marginBottom: '20px' }}>
-            Cüzdanınıza <strong>₺{amount.toFixed(2)}</strong> yüklemek üzeresiniz.
+          <button className="sb-modal-close" onClick={onClose} aria-label="Kapat">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="sb-modal-body" style={{ paddingBottom: '10px' }}>
+          <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: 'var(--sb-text-muted)', textAlign: 'center' }}>
+            {lang === 'tr' 
+              ? `Cüzdanınıza yüklenen tutar: ₺${amount.toFixed(2)}`
+              : `Amount to add to wallet: ₺${amount.toFixed(2)}`}
           </p>
 
-          {/* Interactive Card Preview */}
+          {/* Interactive 3D Card Display */}
           <div className={`flip-card ${isFlipped ? 'flipped' : ''}`}>
             <div className="flip-card-inner">
-              {/* Front */}
-              <div className="flip-card-front" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', textAlign: 'left' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 'bold', opacity: 0.8 }}>KOLATAN CARD</span>
-                  <CreditCard size={28} />
+              {/* Front side */}
+              <div className="flip-card-front">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>KOLATAN CARD</span>
+                  <div style={{ width: '40px', height: '26px', backgroundColor: '#e5a65d', borderRadius: '4px', opacity: 0.8 }}></div>
                 </div>
-                <div style={{ fontSize: '20px', letterSpacing: '2px', fontWeight: 'bold', margin: '20px 0' }}>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', letterSpacing: '2px', wordSpacing: '4px', marginBottom: '20px', textAlign: 'left' }}>
                   {cardNumber || '•••• •••• •••• ••••'}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <div>
-                    <span style={{ fontSize: '9px', display: 'block', opacity: 0.6 }}>KART SAHİBİ</span>
-                    <span>{cardName.toUpperCase() || 'AD SOYAD'}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', textTransform: 'uppercase' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ opacity: 0.6, fontSize: '8px', marginBottom: '2px' }}>{lang === 'tr' ? 'KART SAHİBİ' : 'CARD HOLDER'}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '11px', letterSpacing: '1px' }}>{cardName || 'AD SOYAD'}</div>
                   </div>
-                  <div>
-                    <span style={{ fontSize: '9px', display: 'block', opacity: 0.6 }}>SKT</span>
-                    <span>{expiry || 'AA/YY'}</span>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ opacity: 0.6, fontSize: '8px', marginBottom: '2px' }}>{lang === 'tr' ? 'SKT' : 'EXP'}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '11px', letterSpacing: '1px' }}>{expiry || 'AA/YY'}</div>
                   </div>
                 </div>
               </div>
 
-              {/* Back */}
-              <div className="flip-card-back" style={{ textAlign: 'left' }}>
-                <div style={{ height: '35px', backgroundColor: '#111111', margin: '0 -24px 15px -24px' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ flex: 1, height: '30px', backgroundColor: '#e0e0e0', color: '#111', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '10px', fontSize: '12px', fontStyle: 'italic' }}>
-                    {cardNumber.replace(/\s/g, '').substring(12) || '••••'}
-                  </div>
-                  <div style={{ width: '50px', height: '30px', backgroundColor: 'white', color: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 'bold' }}>
-                    {cvc || '•••'}
-                  </div>
+              {/* Back side */}
+              <div className="flip-card-back">
+                <div style={{ width: '100%', height: '36px', backgroundColor: '#111', margin: '10px 0', position: 'absolute', top: 10, left: 0 }}></div>
+                <div style={{ width: '80%', height: '24px', backgroundColor: '#fff', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px', color: '#333', fontSize: '12px', fontWeight: 'bold', fontStyle: 'italic', margin: '50px auto 0 auto' }}>
+                  {cvc || '•••'}
                 </div>
-                <div style={{ fontSize: '9px', opacity: 0.5, marginTop: '20px', lineHeight: '1.3' }}>
-                  Bu cüzdan kartı Kolatan Coffee Company tarafından simüle edilmiştir. Güvenliğiniz için gerçek kart bilgilerinizi girmeyiniz.
+                <div style={{ fontSize: '8px', opacity: 0.5, marginTop: '30px', padding: '0 20px', lineHeight: '1.3' }}>
+                  This card is property of Kolatan Rewards. Protected by 256-bit SSL secure protocol.
                 </div>
               </div>
             </div>
           </div>
 
-          {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 0', gap: '16px' }}>
-              <div className="sb-logo-circle" style={{ animation: 'spin 1s linear infinite', width: '40px', height: '40px' }}>★</div>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--sb-green)' }}>3D Secure Doğrulaması Yapılıyor...</span>
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--sb-dark)' }}>{lang === 'tr' ? 'Kart Sahibi Ad Soyad' : 'Cardholder Name'}</label>
+              <input
+                type="text"
+                placeholder="EGE KOLATAN"
+                className="sb-search-input"
+                value={cardName}
+                onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                required
+              />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sb-dark)' }}>Kart Üzerindeki İsim</label>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--sb-dark)' }}>{lang === 'tr' ? 'Kart Numarası' : 'Card Number'}</label>
+              <input
+                type="text"
+                placeholder="4000 1234 5678 9010"
+                className="sb-search-input"
+                value={cardNumber}
+                onChange={handleCardNumberChange}
+                required
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--sb-dark)' }}>{lang === 'tr' ? 'Son Kullanma' : 'Expiry Date'}</label>
                 <input
                   type="text"
-                  required
-                  placeholder="Ad Soyad"
+                  placeholder="AA/YY"
                   className="sb-search-input"
-                  style={{ borderRadius: '8px', background: 'white', height: '38px', paddingLeft: '14px' }}
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
+                  value={expiry}
+                  onChange={handleExpiryChange}
+                  required
                 />
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sb-dark)' }}>Kart Numarası</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--sb-dark)' }}>CVC (CVV)</label>
                 <input
-                  type="text"
-                  required
-                  placeholder="0000 0000 0000 0000"
+                  type="password"
+                  placeholder="123"
                   className="sb-search-input"
-                  style={{ borderRadius: '8px', background: 'white', height: '38px', paddingLeft: '14px' }}
-                  value={cardNumber}
-                  onChange={handleCardNumberChange}
+                  value={cvc}
+                  onChange={handleCvcChange}
+                  onFocus={() => setIsFlipped(true)}
+                  onBlur={() => setIsFlipped(false)}
+                  required
                 />
               </div>
+            </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sb-dark)' }}>Son Kullanma</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="AA/YY"
-                    className="sb-search-input"
-                    style={{ borderRadius: '8px', background: 'white', height: '38px', paddingLeft: '14px' }}
-                    value={expiry}
-                    onChange={handleExpiryChange}
-                    maxLength="5"
-                  />
-                </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sb-dark)' }}>CVC</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="•••"
-                    className="sb-search-input"
-                    style={{ borderRadius: '8px', background: 'white', height: '38px', paddingLeft: '14px' }}
-                    value={cvc}
-                    onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').substring(0, 3))}
-                    onFocus={() => setIsFlipped(true)}
-                    onBlur={() => setIsFlipped(false)}
-                    maxLength="3"
-                  />
-                </div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '6px 0', fontSize: '11px', color: 'var(--sb-text-muted)' }}>
+              <ShieldCheck size={16} style={{ color: 'var(--sb-green)' }} />
+              <span>{lang === 'tr' ? '256-bit SSL Güvenli Bağlantı ve 3D Secure onaylama.' : '256-bit SSL Secure and 3D Secure verification.'}</span>
+            </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--sb-text-muted)', marginTop: '6px' }}>
-                <ShieldCheck size={16} style={{ color: 'var(--sb-green)' }} />
-                <span>SSL Korumalı 256-Bit Güvenli Ödeme Bağlantısı</span>
-              </div>
-
-              <button
-                type="submit"
-                className="sb-btn-solid"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--sb-green)',
-                  color: 'white',
-                  fontWeight: '600',
-                  marginTop: '10px'
-                }}
-              >
-                ₺{amount.toFixed(2)} Öde ve Yükle
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              className="sb-btn-solid"
+              style={{ width: '100%', padding: '12px', fontSize: '14px', marginTop: '6px' }}
+              disabled={loading}
+            >
+              {loading 
+                ? (lang === 'tr' ? 'Ödeme Doğrulanıyor...' : 'Verifying Payment...') 
+                : (lang === 'tr' ? `₺${amount.toFixed(2)} Öde ve Yükle` : `Pay & Load ₺${amount.toFixed(2)}`)}
+            </button>
+          </form>
         </div>
       </div>
-    </div>
+    </>
   );
 }

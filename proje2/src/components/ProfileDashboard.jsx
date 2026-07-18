@@ -1,62 +1,81 @@
-import React, { useState } from 'react';
-import { CreditCard, Star, Clock, Plus, Award, User, ShoppingBag, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CreditCard, Award, History, ArrowRight, ShieldCheck } from 'lucide-react';
+import { translations } from '../services/translations';
 
-export default function ProfileDashboard({ currentUser, onAddBalance, orderHistory, onAwardPrize }) {
-  const [addAmount, setAddAmount] = useState('');
-  
-  // Wheel states
-  const todayStr = new Date().toDateString();
+const PRIZES = [
+  { name: '10 TL Bakiye', value: 10, type: 'balance', color: '#006241' },
+  { name: '20 TL Bakiye', value: 20, type: 'balance', color: '#1e3932' },
+  { name: '50 TL Bakiye', value: 50, type: 'balance', color: '#cba258' },
+  { name: '2 Yıldız', value: 2, type: 'stars', color: '#a27a3c' },
+  { name: '5 Yıldız', value: 5, type: 'stars', color: '#ffb300' },
+  { name: 'Pas (Tekrar Dene)', value: 0, type: 'nothing', color: '#d32f2f' }
+];
+
+export default function ProfileDashboard({ currentUser, onAddBalance, orderHistory, onAwardPrize, lang }) {
+  const [customAmount, setCustomAmount] = useState('');
+  const [wheelRotation, setWheelRotation] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
   const [lastSpunDate, setLastSpunDate] = useState(() => localStorage.getItem(`last_spun_${currentUser.email}`) || '');
-  const hasSpunToday = lastSpunDate === todayStr;
-  const [rotation, setRotation] = useState(0);
-  const [spinning, setSpinning] = useState(false);
 
-  const handleQuickAdd = (amount) => {
-    onAddBalance(amount);
-  };
+  const t = translations[lang] || translations.tr;
+
+  // Star Progress calculations
+  const stars = currentUser.stars || 0;
+  const starsNeeded = 15;
+  const progressPercent = Math.min(100, (stars / starsNeeded) * 100);
 
   const handleCustomAdd = (e) => {
     e.preventDefault();
-    const val = parseFloat(addAmount);
-    if (!isNaN(val) && val > 0) {
-      onAddBalance(val);
-      setAddAmount('');
+    const amt = parseFloat(customAmount);
+    if (!isNaN(amt) && amt > 0) {
+      onAddBalance(amt);
+      setCustomAmount('');
     }
   };
 
-  const spinWheel = () => {
-    if (hasSpunToday || spinning) return;
-    setSpinning(true);
+  const handleSpinWheel = () => {
+    const todayStr = new Date().toDateString();
+    if (lastSpunDate === todayStr) {
+      alert(t.spunAlready);
+      return;
+    }
 
-    const prizes = [
-      { name: '+10 ₺ Bakiye', type: 'balance', value: 10, deg: 30 },
-      { name: '+2 Yıldız', type: 'stars', value: 2, deg: 90 },
-      { name: '+20 ₺ Bakiye', type: 'balance', value: 20, deg: 150 },
-      { name: '+5 Yıldız', type: 'stars', value: 5, deg: 210 },
-      { name: 'Tekrar Dene', type: 'none', value: 0, deg: 270 },
-      { name: '+15 ₺ Bakiye', type: 'balance', value: 15, deg: 330 }
-    ];
+    if (isSpinning) return;
+    setIsSpinning(true);
 
-    const randomIndex = Math.floor(Math.random() * prizes.length);
-    const selectedPrize = prizes[randomIndex];
-    
-    // We target rotation between 5 and 8 spins + segment center
-    const targetDeg = 1800 + (360 - selectedPrize.deg);
-    setRotation(targetDeg);
+    // Pick a random prize index
+    const prizeIndex = Math.floor(Math.random() * PRIZES.length);
+    const selectedPrize = PRIZES[prizeIndex];
+
+    // Compute rotation angles: 3 full spins (1080 deg) + prize angle offset
+    const segmentAngle = 360 / PRIZES.length;
+    const prizeOffset = (PRIZES.length - 1 - prizeIndex) * segmentAngle + (segmentAngle / 2);
+    const targetRotation = wheelRotation + 1440 + prizeOffset - (wheelRotation % 360);
+
+    setWheelRotation(targetRotation);
 
     setTimeout(() => {
-      setSpinning(false);
+      setIsSpinning(false);
       localStorage.setItem(`last_spun_${currentUser.email}`, todayStr);
       setLastSpunDate(todayStr);
 
       if (selectedPrize.type === 'balance') {
         onAddBalance(selectedPrize.value);
-        alert(`Tebrikler!\nÇarktan ${selectedPrize.name} kazandınız! Hesabınıza yüklendi.`);
+        const prizeAlert = lang === 'tr'
+          ? `Tebrikler!\nÇarktan ${selectedPrize.name} kazandınız! Hesabınıza yüklendi.`
+          : `Congratulations!\nYou won ${selectedPrize.value} TL balance from the wheel! Added to your account.`;
+        alert(prizeAlert);
       } else if (selectedPrize.type === 'stars') {
         onAwardPrize('stars', selectedPrize.value);
-        alert(`Tebrikler!\nÇarktan ${selectedPrize.name} kazandınız! Hesabınıza eklendi.`);
+        const prizeAlert = lang === 'tr'
+          ? `Tebrikler!\nÇarktan ${selectedPrize.name} kazandınız! Hesabınıza eklendi.`
+          : `Congratulations!\nYou won ${selectedPrize.value} Stars from the wheel! Added to your rewards.`;
+        alert(prizeAlert);
       } else {
-        alert('Bugün şansınız yaver gitmedi, yarın tekrar deneyin!');
+        const passAlert = lang === 'tr'
+          ? 'Bugün şansınız yaver gitmedi, yarın tekrar deneyin!'
+          : 'Better luck tomorrow! Try again!';
+        alert(passAlert);
       }
     }, 4000);
   };
@@ -92,12 +111,12 @@ export default function ProfileDashboard({ currentUser, onAddBalance, orderHisto
           </div>
           <div>
             <h1 style={{ color: 'white', fontSize: '28px', margin: '0 0 6px 0', fontFamily: 'var(--font-heading)', fontWeight: '700' }}>
-              {currentUser.name}
+              {t.welcome}, {currentUser.name}
             </h1>
             <p style={{ margin: 0, opacity: 0.8, fontSize: '14px' }}>@{currentUser.username} • {currentUser.email}</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', marginTop: '10px', color: 'var(--sb-light-green)' }}>
               <ShieldCheck size={16} />
-              <span>Kolatan Üyesi (Doğrulanmış Hesap)</span>
+              <span>{t.verifiedAccount}</span>
             </div>
           </div>
         </div>
@@ -110,8 +129,8 @@ export default function ProfileDashboard({ currentUser, onAddBalance, orderHisto
           textAlign: 'center',
           border: '1px solid rgba(255,255,255,0.1)'
         }}>
-          <span style={{ fontSize: '12px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>Üyelik Seviyesi</span>
-          <h3 style={{ margin: '4px 0 0 0', color: 'var(--sb-light-green)', fontWeight: '600' }}>Gold Üye</h3>
+          <span style={{ fontSize: '12px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>{t.memberLevel}</span>
+          <h3 style={{ margin: '4px 0 0 0', color: 'var(--sb-light-green)', fontWeight: '600' }}>{t.goldMember}</h3>
         </div>
       </div>
 
@@ -128,77 +147,62 @@ export default function ProfileDashboard({ currentUser, onAddBalance, orderHisto
           }}>
             <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--sb-dark-green)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CreditCard size={20} />
-              <span>Kolatan Cüzdanım</span>
+              <span>{t.walletTitle}</span>
             </h3>
 
             <div style={{ 
-              background: 'linear-gradient(135deg, #2b2b2b 0%, #151515 100%)',
+              backgroundColor: 'var(--sb-cream)',
               borderRadius: '12px',
               padding: '24px',
-              color: 'white',
-              position: 'relative',
-              overflow: 'hidden',
+              textAlign: 'center',
               marginBottom: '24px',
-              boxShadow: 'var(--sb-shadow-md)'
+              border: '1px solid var(--sb-border)'
             }}>
-              {/* Card Decoration */}
-              <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.03)' }}></div>
-              <div style={{ position: 'absolute', right: '20px', top: '20px', fontSize: '20px', opacity: 0.2 }}>KOLATAN CARD</div>
-              
-              <span style={{ fontSize: '12px', opacity: 0.7, textTransform: 'uppercase' }}>Kullanılabilir Bakiye</span>
-              <h2 style={{ fontSize: '32px', margin: '4px 0 20px 0', fontWeight: '700', fontFamily: 'var(--font-heading)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--sb-text-muted)', display: 'block', marginBottom: '6px', fontWeight: '500' }}>
+                {lang === 'tr' ? 'Mevcut Cüzdan Bakiyesi' : 'Current Wallet Balance'}
+              </span>
+              <h2 style={{ fontSize: '38px', fontWeight: '800', color: 'var(--sb-dark-green)', margin: 0 }}>
                 ₺{(currentUser.balance || 0).toFixed(2)}
               </h2>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', opacity: 0.7 }}>
-                <span>Kart Sahibi: {currentUser.name.toUpperCase()}</span>
-                <span>★★★★ 5808</span>
-              </div>
             </div>
 
-            {/* Quick Balance Add Buttons */}
-            <span style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '10px' }}>Hızlı Bakiye Yükle</span>
+            {/* Quick Add Buttons */}
+            <span style={{ fontSize: '12px', color: 'var(--sb-text-muted)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.5px', display: 'block', marginBottom: '10px' }}>
+              {t.quickAdd}
+            </span>
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-              {[50, 100, 200].map((amt) => (
+              {[50, 100, 200].map((val) => (
                 <button
-                  key={amt}
+                  key={val}
                   className="sb-btn-outline"
-                  style={{ flex: 1, padding: '10px', fontSize: '14px', borderRadius: '8px' }}
-                  onClick={() => handleQuickAdd(amt)}
+                  style={{ flex: 1, padding: '10px 0', fontSize: '14px' }}
+                  onClick={() => onAddBalance(val)}
                 >
-                  +₺{amt}
+                  +{val} TL
                 </button>
               ))}
             </div>
 
-            {/* Custom Balance Add Form */}
+            {/* Custom Amount Form */}
             <form onSubmit={handleCustomAdd} style={{ display: 'flex', gap: '10px' }}>
               <input
                 type="number"
-                placeholder="Özel Tutar (TL)"
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  border: '1px solid var(--sb-border)',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  outline: 'none'
-                }}
-                value={addAmount}
-                onChange={(e) => setAddAmount(e.target.value)}
+                placeholder={t.customAmount}
+                className="sb-search-input"
+                style={{ flexGrow: 1 }}
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value)}
+                min="10"
+                max="5000"
               />
-              <button 
-                type="submit" 
-                className="sb-btn-solid" 
-                style={{ padding: '10px 20px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Plus size={16} />
-                <span>Yükle</span>
+              <button type="submit" className="sb-btn-solid" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px' }}>
+                <span>{t.addBalance}</span>
+                <ArrowRight size={16} />
               </button>
             </form>
           </div>
 
-          {/* Starbucks/Kolatan Rewards Stars */}
+          {/* Starbucks Stars System */}
           <div style={{
             backgroundColor: '#ffffff',
             borderRadius: '16px',
@@ -206,46 +210,37 @@ export default function ProfileDashboard({ currentUser, onAddBalance, orderHisto
             border: '1px solid var(--sb-border)',
             boxShadow: 'var(--sb-shadow-sm)'
           }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--sb-dark-green)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Star size={20} fill="#cba258" stroke="#cba258" />
-              <span>Yıldız Durumum</span>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--sb-dark-green)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Award size={20} />
+              <span>Kolatan® Rewards Yıldızlarım</span>
             </h3>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-              <div style={{ fontSize: '36px', fontWeight: '800', color: '#cba258' }}>
-                {currentUser.stars || 0}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#ffb300' }}>★</span>
+                <span style={{ fontSize: '28px', fontWeight: 'bold' }}>{stars}</span>
               </div>
-              <div>
-                <strong style={{ fontSize: '14px', display: 'block' }}>Birikmiş Yıldız</strong>
-                <span style={{ fontSize: '12px', color: 'var(--sb-text-muted)' }}>Her 10 TL alışverişe 1 Yıldız kazanırsınız.</span>
-              </div>
-            </div>
-
-            {/* Stars Progress */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
-                <span>Hediye İçecek İlerlemesi</span>
-                <strong>{currentUser.stars || 0} / 15 Yıldız</strong>
-              </div>
-              <div style={{ height: '8px', backgroundColor: 'var(--sb-cream)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  width: `${Math.min(100, ((currentUser.stars || 0) / 15) * 100)}%`,
-                  backgroundColor: '#cba258',
-                  borderRadius: '4px',
-                  transition: 'width 0.3s ease'
-                }}></div>
-              </div>
-              <span style={{ fontSize: '11px', color: 'var(--sb-text-muted)', display: 'block', marginTop: '8px', textAlign: 'right' }}>
-                {(currentUser.stars || 0) >= 15 ? 'Tebrikler! 1 Bedava Tall boy kahveniz var!' : `Bedava kahve için ${Math.max(0, 15 - (currentUser.stars || 0))} Yıldız kaldı.`}
+              <span style={{ fontSize: '13px', color: 'var(--sb-text-muted)' }}>
+                {stars} / {starsNeeded} {t.stars}
               </span>
             </div>
+
+            {/* Progress Bar */}
+            <div style={{ height: '8px', backgroundColor: 'var(--sb-border)', borderRadius: '4px', overflow: 'hidden', marginBottom: '16px' }}>
+              <div style={{ height: '100%', backgroundColor: 'var(--sb-green)', width: `${progressPercent}%`, borderRadius: '4px' }}></div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--sb-text-muted)', lineHeight: '1.5' }}>
+              {lang === 'tr'
+                ? `15 Yıldız biriktirdiğinizde 1 adet Tall boy ikram kahvenizi dilediğiniz şubemizden alabilirsiniz! (Kalan Yıldız: ${Math.max(0, starsNeeded - stars)})`
+                : `Earn 15 Stars to get 1 Free Tall size coffee at any branch! (Remaining Stars: ${Math.max(0, starsNeeded - stars)})`}
+            </p>
           </div>
         </div>
 
-        {/* Right side: Wheel & Order History */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', height: '100%' }}>
-          {/* Wheel of Fortune */}
+        {/* Wheel of Fortune & Order History */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+          {/* Daily Spin Wheel */}
           <div style={{
             backgroundColor: '#ffffff',
             borderRadius: '16px',
@@ -254,96 +249,90 @@ export default function ProfileDashboard({ currentUser, onAddBalance, orderHisto
             boxShadow: 'var(--sb-shadow-sm)',
             textAlign: 'center'
           }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--sb-dark-green)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-              <Award size={20} style={{ color: '#cba258' }} />
-              <span>Hediye Çarkı</span>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--sb-dark-green)', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Award size={20} style={{ color: '#ffb300' }} />
+              <span>{t.spinWheelTitle}</span>
             </h3>
-            <p style={{ fontSize: '12px', color: 'var(--sb-text-muted)', marginBottom: '10px' }}>Günde 1 kez çevirerek sürpriz hediyeler kazanın!</p>
+            <p style={{ fontSize: '12px', color: 'var(--sb-text-muted)', margin: '0 0 20px 0' }}>
+              {lang === 'tr' 
+                ? 'Günde bir kez çevirerek sürpriz bakiye veya yıldız ödülleri kazanın!'
+                : 'Spin once a day to win surprise balances or stars!'}
+            </p>
 
+            {/* Wheel Canvas Mock */}
             <div className="wheel-container">
               <div className="wheel-pointer"></div>
               <div 
                 className="wheel" 
                 style={{ 
-                  transform: `rotate(${rotation}deg)`,
-                  background: 'conic-gradient(#006241 0deg 60deg, #cba258 60deg 120deg, #1e3932 120deg 180deg, #008248 180deg 240deg, #b2dfdb 240deg 300deg, #c5e1a5 300deg 360deg)'
+                  transform: `rotate(${wheelRotation}deg)`,
+                  transition: isSpinning ? 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)' : 'none'
                 }}
               >
-                {/* Segments Text Preview Overlay */}
-                <div style={{ position: 'absolute', width: '100%', height: '100%', fontSize: '9px', fontWeight: 'bold', color: 'white' }}>
-                  <span style={{ position: 'absolute', top: '25px', left: '50%', transform: 'translateX(-50%) rotate(0deg)' }}>+10₺</span>
-                  <span style={{ position: 'absolute', right: '25px', top: '50%', transform: 'translateY(-50%) rotate(90deg)' }}>+2⭐</span>
-                  <span style={{ position: 'absolute', bottom: '25px', left: '50%', transform: 'translateX(-50%) rotate(180deg)' }}>+20₺</span>
-                  <span style={{ position: 'absolute', left: '25px', top: '50%', transform: 'translateY(-50%) rotate(270deg)' }}>+5⭐</span>
-                </div>
+                {PRIZES.map((p, idx) => {
+                  const angle = 360 / PRIZES.length;
+                  return (
+                    <div 
+                      key={idx} 
+                      className="wheel-segment" 
+                      style={{ 
+                        transform: `rotate(${idx * angle}deg)`,
+                        backgroundColor: p.color
+                      }}
+                    >
+                      <span className="wheel-text">{p.name}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            <button
-              className="sb-btn-solid"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                backgroundColor: hasSpunToday ? '#cccccc' : 'var(--sb-green)',
-                color: 'white',
-                fontWeight: '600',
-                cursor: hasSpunToday ? 'not-allowed' : 'pointer',
-                marginTop: '12px'
-              }}
-              disabled={hasSpunToday || spinning}
-              onClick={spinWheel}
+            <button 
+              className="sb-btn-solid" 
+              style={{ width: '100%', padding: '12px', fontSize: '14px', marginTop: '10px' }} 
+              onClick={handleSpinWheel}
+              disabled={isSpinning}
             >
-              {hasSpunToday ? 'Bugün Çarkı Çevirdiniz' : spinning ? 'Çark Dönüyor...' : 'Çarkı Çevir'}
+              {isSpinning ? (lang === 'tr' ? 'Dönüyor...' : 'Spinning...') : t.spinBtn}
             </button>
           </div>
 
-          {/* Order History Section */}
+          {/* Order History */}
           <div style={{
             backgroundColor: '#ffffff',
             borderRadius: '16px',
             padding: '30px',
             border: '1px solid var(--sb-border)',
-            boxShadow: 'var(--sb-shadow-sm)',
-            display: 'flex',
-            flexDirection: 'column',
-            maxHeight: '400px'
+            boxShadow: 'var(--sb-shadow-sm)'
           }}>
             <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--sb-dark-green)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Clock size={20} />
-              <span>Son Siparişlerim</span>
+              <History size={20} />
+              <span>{t.orderHistoryTitle}</span>
             </h3>
 
-            <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' }}>
               {orderHistory.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 0', color: 'var(--sb-text-muted)', gap: '10px' }}>
-                  <ShoppingBag size={32} />
-                  <span style={{ fontSize: '13px' }}>Henüz sipariş vermediniz.</span>
-                </div>
+                <p style={{ textAlign: 'center', color: 'var(--sb-text-muted)', fontSize: '14px', padding: '20px 0' }}>
+                  {t.noOrdersYet}
+                </p>
               ) : (
-                [...orderHistory].reverse().map((order, i) => (
-                  <div 
-                    key={i} 
-                    style={{
-                      border: '1px solid var(--sb-border)',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      backgroundColor: 'var(--sb-card-bg)',
-                      fontSize: '13px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', marginBottom: '8px' }}>
-                      <span style={{ color: 'var(--sb-dark)' }}>Sipariş #{orderHistory.length - i}</span>
-                      <span style={{ color: 'var(--sb-green)' }}>₺{order.price.toFixed(2)}</span>
+                orderHistory.map((order, idx) => (
+                  <div key={idx} style={{ padding: '16px', border: '1px solid var(--sb-border)', borderRadius: '12px', backgroundColor: 'var(--sb-bg)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--sb-text-muted)', marginBottom: '10px' }}>
+                      <span>{order.date}</span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--sb-green)' }}>+ {order.starsEarned} {t.stars}</span>
                     </div>
-                    <div style={{ color: 'var(--sb-text-muted)', fontSize: '12px', marginBottom: '10px', lineHeight: '1.4' }}>
-                      {order.items.map((item, idx) => (
-                        <div key={idx}>• {item.name} ({item.customizations.find(c => c.startsWith('Boy:')) || 'Grande'})</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                      {order.items.map((item, i) => (
+                        <div key={i} style={{ fontSize: '13px', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{item.name} ({item.customizations.size})</span>
+                          <span style={{ color: 'var(--sb-text-muted)' }}>x1</span>
+                        </div>
                       ))}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--sb-text-muted)', borderTop: '1px dashed var(--sb-border)', paddingTop: '8px' }}>
-                      <span>{order.date}</span>
-                      <span style={{ color: '#cba258', fontWeight: '600' }}>+{order.starsEarned} Yıldız</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px dashed var(--sb-border)', paddingTop: '10px', fontSize: '14px', fontWeight: 'bold' }}>
+                      <span>{t.total}</span>
+                      <span>₺{order.price.toFixed(2)}</span>
                     </div>
                   </div>
                 ))
