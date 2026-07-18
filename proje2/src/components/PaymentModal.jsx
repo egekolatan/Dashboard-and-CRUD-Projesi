@@ -67,9 +67,8 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
   };
 
   return (
-    <>
-      <div className="sb-modal-overlay" style={{ zIndex: 110 }} onClick={onClose}></div>
-      <div className="sb-modal" style={{ zIndex: 111, maxWidth: '420px' }}>
+    <div className="sb-modal-overlay" style={{ zIndex: 110 }} onClick={onClose}>
+      <div className="sb-modal" style={{ zIndex: 111, maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
         <div className="sb-modal-header">
           <h2 className="sb-modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <CreditCard size={22} className="sb-green-icon" />
@@ -195,6 +194,6 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
           </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }

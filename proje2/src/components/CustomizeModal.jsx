@@ -105,9 +105,8 @@ export default function CustomizeModal({ product, onClose, onAddToBag, lang }) {
     : '5.0';
 
   return (
-    <>
-      <div className="sb-modal-overlay" onClick={onClose}></div>
-      <div className="sb-modal">
+    <div className="sb-modal-overlay" onClick={onClose}>
+      <div className="sb-modal" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="sb-modal-header">
           <h2 className="sb-modal-title">{product.name}</h2>
@@ -385,6 +384,6 @@ export default function CustomizeModal({ product, onClose, onAddToBag, lang }) {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
