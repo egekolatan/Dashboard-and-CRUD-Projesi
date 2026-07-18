@@ -76,12 +76,9 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login', onL
   };
 
   return (
-    <>
-      {/* Background Overlay */}
-      <div className="sb-modal-overlay" onClick={onClose}></div>
-
+    <div className="sb-modal-overlay" onClick={onClose}>
       {/* Modal Container */}
-      <div className="sb-modal" style={{ maxWidth: '480px', padding: '0' }}>
+      <div className="sb-modal" style={{ maxWidth: '480px', padding: '0', display: 'flex', flexDirection: 'column', height: 'auto', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
         {/* Header Section */}
         <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--sb-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: '800', fontSize: '22px', color: 'var(--sb-dark-green)', margin: 0 }}>
@@ -287,6 +284,6 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login', onL
           </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }
