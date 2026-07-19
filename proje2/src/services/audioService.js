@@ -71,3 +71,29 @@ export function playWinSound() {
     console.warn('Audio play failed:', error);
   }
 }
+
+/**
+ * Plays a soft bubbly pop chime when an item is added to the cart.
+ */
+export function playAddToCartSound() {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1);
+
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.13);
+  } catch (error) {
+    console.warn('Audio play failed:', error);
+  }
+}

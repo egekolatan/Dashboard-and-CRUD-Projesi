@@ -113,7 +113,7 @@ export default function Navbar({
         {/* Cart Trigger */}
         <button className="sb-btn-cart" onClick={onCartClick} aria-label="Sepetim">
           <ShoppingBag size={20} />
-          {cartCount > 0 && <span className="sb-cart-badge">{cartCount}</span>}
+          {cartCount > 0 && <span key={cartCount} className="sb-cart-badge pop-animation">{cartCount}</span>}
         </button>
 
         {/* Mobile Menu Trigger */}

@@ -12,6 +12,7 @@ import MobileMenu from './components/MobileMenu';
 import OrderTracker from './components/OrderTracker';
 import { translations } from './services/translations';
 import { simulatedLogin, simulatedRegister, simulatedAddBalance, simulatedCheckout } from './services/api';
+import { playAddToCartSound } from './services/audioService';
 import { Search } from 'lucide-react';
 
 const CATEGORIES = [
@@ -514,6 +515,7 @@ export default function App() {
     }
     setCartItems((prevItems) => [...prevItems, customizedItem]);
     setIsCartOpen(true);
+    playAddToCartSound();
   };
 
   const handleRemoveCartItem = (indexToRemove) => {
