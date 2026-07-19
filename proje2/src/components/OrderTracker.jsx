@@ -12,14 +12,21 @@ export default function OrderTracker({ lang, activeOrder, onClose }) {
 
     const timer1 = setTimeout(() => setStep(1), 6000);   // -> Preparing
     const timer2 = setTimeout(() => setStep(2), 12000);  // -> On Way
-    const timer3 = setTimeout(() => setStep(3), 18000);  // -> Delivered
+    let timer4;
+    const timer3 = setTimeout(() => {
+      setStep(3);
+      timer4 = setTimeout(() => {
+        onClose();
+      }, 3000); // 3 seconds after Delivered -> close
+    }, 18000);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
+      if (timer4) clearTimeout(timer4);
     };
-  }, [activeOrder]);
+  }, [activeOrder, onClose]);
 
   if (!activeOrder) return null;
 
