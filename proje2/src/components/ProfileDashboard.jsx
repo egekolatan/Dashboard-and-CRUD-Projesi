@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, Award, History, ArrowRight, ShieldCheck } from 'lucide-react';
 import { translations } from '../services/translations';
+import { playTickSound, playWinSound } from '../services/audioService';
 
 const PRIZES = [
   { name: '10 TL Bakiye', value: 10, type: 'balance', color: '#006241' },
@@ -54,10 +55,24 @@ export default function ProfileDashboard({ currentUser, onAddBalance, orderHisto
 
     setWheelRotation(targetRotation);
 
+    // Play tick sounds at increasing intervals (simulating deceleration)
+    const totalDuration = 4000;
+    const ticksCount = 28;
+    for (let i = 0; i < ticksCount; i++) {
+      const progress = i / ticksCount;
+      const easeOutTime = Math.pow(progress, 2.5) * totalDuration;
+      setTimeout(() => {
+        playTickSound();
+      }, easeOutTime);
+    }
+
     setTimeout(() => {
       setIsSpinning(false);
       localStorage.setItem(`last_spun_${currentUser.email}`, todayStr);
       setLastSpunDate(todayStr);
+
+      // Play win sound when stopping
+      playWinSound();
 
       if (selectedPrize.type === 'balance') {
         onAddBalance(selectedPrize.value);
