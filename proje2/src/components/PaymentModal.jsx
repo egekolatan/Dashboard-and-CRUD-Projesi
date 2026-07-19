@@ -68,18 +68,19 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
 
   return (
     <div className="sb-modal-overlay" style={{ zIndex: 110 }} onClick={onClose}>
-      <div className="sb-modal" style={{ zIndex: 111, maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
-        <div className="sb-modal-header">
-          <h2 className="sb-modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="sb-modal" style={{ zIndex: 111, maxWidth: '440px', display: 'flex', flexDirection: 'column', height: 'auto', maxHeight: '90vh', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+        {/* Header Section */}
+        <div style={{ padding: '24px 30px', borderBottom: '1px solid var(--sb-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: '800', fontSize: '20px', color: 'var(--sb-dark-green)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <CreditCard size={22} className="sb-green-icon" />
             <span>{lang === 'tr' ? 'Güvenli Ödeme' : 'Secure Payment'}</span>
           </h2>
-          <button className="sb-modal-close" onClick={onClose} aria-label="Kapat">
+          <button onClick={onClose} style={{ color: 'var(--sb-text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }} aria-label="Kapat">
             <X size={24} />
           </button>
         </div>
 
-        <div className="sb-modal-body" style={{ paddingBottom: '10px' }}>
+        <div className="sb-modal-body" style={{ padding: '24px 30px 30px 30px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: 'var(--sb-text-muted)', textAlign: 'center' }}>
             {lang === 'tr' 
               ? `Cüzdanınıza yüklenen tutar: ₺${amount.toFixed(2)}`
