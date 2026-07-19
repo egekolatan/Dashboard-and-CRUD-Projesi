@@ -521,7 +521,13 @@ export default function App() {
   };
 
   const handleCheckout = async (total) => {
-    if (!currentUser) return false;
+    if (!currentUser) {
+      alert(lang === 'tr' ? 'Sipariş vermek için lütfen önce giriş yapın.' : 'Please sign in to place an order.');
+      setIsCartOpen(false);
+      setLoginInitialMode('login');
+      setIsLoginOpen(true);
+      return false;
+    }
     
     setApiLoading(true);
     const result = await simulatedCheckout(currentUser.email, total, cartItems, users, orderHistory);

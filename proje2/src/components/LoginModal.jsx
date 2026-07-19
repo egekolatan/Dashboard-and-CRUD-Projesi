@@ -148,7 +148,7 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login', onL
                     <input 
                       type="text" 
                       placeholder="Ege Kolatan" 
-                      className="sb-search-input"
+                      className="sb-input"
                       style={{ paddingLeft: '38px', width: '100%', height: '44px' }}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -167,7 +167,7 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login', onL
                     <input 
                       type="text" 
                       placeholder="egekolatan" 
-                      className="sb-search-input"
+                      className="sb-input"
                       style={{ paddingLeft: '38px', width: '100%', height: '44px' }}
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
@@ -183,22 +183,22 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login', onL
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '10px' }}>
                     {AVATARS.map((avatar) => (
-                      <button
-                        key={avatar}
-                        type="button"
-                        onClick={() => setSelectedAvatar(avatar)}
-                        style={{
-                          fontSize: '24px',
-                          height: '46px',
-                          borderRadius: '8px',
-                          backgroundColor: selectedAvatar === avatar ? 'var(--sb-cream)' : 'var(--sb-bg)',
-                          border: `2px solid ${selectedAvatar === avatar ? 'var(--sb-green)' : 'var(--sb-border)'}`,
-                          transition: 'all 0.2s',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {avatar}
-                      </button>
+                       <button
+                         key={avatar}
+                         type="button"
+                         onClick={() => setSelectedAvatar(avatar)}
+                         style={{
+                           fontSize: '24px',
+                           height: '46px',
+                           borderRadius: '8px',
+                           backgroundColor: selectedAvatar === avatar ? 'var(--sb-cream)' : 'var(--sb-bg)',
+                           border: `2px solid ${selectedAvatar === avatar ? 'var(--sb-green)' : 'var(--sb-border)'}`,
+                           transition: 'all 0.2s',
+                           cursor: 'pointer'
+                         }}
+                       >
+                         {avatar}
+                       </button>
                     ))}
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login', onL
                 <input 
                   type="email" 
                   placeholder="egekolatan114@gmail.com" 
-                  className="sb-search-input"
+                  className="sb-input"
                   style={{ paddingLeft: '38px', width: '100%', height: '44px' }}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -234,7 +234,7 @@ export default function LoginModal({ isOpen, onClose, initialMode = 'login', onL
                 <input 
                   type={showPassword ? 'text' : 'password'} 
                   placeholder={mode === 'login' ? 'ege352008' : '••••••••'} 
-                  className="sb-search-input"
+                  className="sb-input"
                   style={{ paddingLeft: '38px', paddingRight: '40px', width: '100%', height: '44px' }}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

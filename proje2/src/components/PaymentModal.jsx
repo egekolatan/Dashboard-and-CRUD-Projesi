@@ -130,7 +130,7 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
               <input
                 type="text"
                 placeholder="EGE KOLATAN"
-                className="sb-search-input"
+                className="sb-input"
                 value={cardName}
                 onChange={(e) => setCardName(e.target.value.toUpperCase())}
                 required
@@ -142,7 +142,7 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
               <input
                 type="text"
                 placeholder="4000 1234 5678 9010"
-                className="sb-search-input"
+                className="sb-input"
                 value={cardNumber}
                 onChange={handleCardNumberChange}
                 required
@@ -155,7 +155,7 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
                 <input
                   type="text"
                   placeholder="AA/YY"
-                  className="sb-search-input"
+                  className="sb-input"
                   value={expiry}
                   onChange={handleExpiryChange}
                   required
@@ -166,7 +166,7 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
                 <input
                   type="password"
                   placeholder="123"
-                  className="sb-search-input"
+                  className="sb-input"
                   value={cvc}
                   onChange={handleCvcChange}
                   onFocus={() => setIsFlipped(true)}

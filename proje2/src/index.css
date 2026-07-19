@@ -1275,3 +1275,76 @@ body.dark-theme .sb-btn-cart:hover {
     gap: 20px;
   }
 }
+
+/* Form Input Class (replaces sb-search-input for standard forms) */
+.sb-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--sb-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  transition: var(--transition-smooth);
+  background: var(--sb-card-bg);
+  color: var(--sb-dark);
+  font-family: var(--font-body);
+}
+
+.sb-input:focus {
+  outline: none;
+  border-color: var(--sb-green);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 98, 65, 0.15);
+}
+
+body.dark-theme .sb-input {
+  background: #2d2d2d;
+  border-color: #444;
+  color: white;
+}
+
+body.dark-theme .sb-input:focus {
+  background: #1e1e1e;
+  border-color: var(--sb-green);
+}
+
+/* Perfect Pie Slices for Wheel of Fortune */
+.wheel-segment {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transform-origin: 50% 50%;
+  /* Creates a perfect 60 degree slice starting from top center (0 deg) to 60 deg */
+  clip-path: polygon(50% 50%, 50% 0%, 93.3% 25%, 50% 50%);
+}
+
+.wheel-text {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  /* Align centered within the 60-degree slice (rotated by 30 deg to center it) */
+  transform: translateX(-50%) rotate(30deg);
+  transform-origin: 50% 106px; /* radius to wheel center is 130px - 24px = 106px */
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+/* Credit Card alignment fix */
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  padding: 24px;
+  color: white;
+  box-sizing: border-box;
+}
+
