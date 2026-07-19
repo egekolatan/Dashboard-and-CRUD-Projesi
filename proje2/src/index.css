@@ -404,8 +404,9 @@ a {
 }
 
 .sb-product-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--sb-shadow-md);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  border-color: var(--sb-green);
 }
 
 .sb-product-img-wrapper {
@@ -1195,6 +1196,7 @@ body.dark-theme .sb-btn-cart:hover {
   border-radius: 12px;
   padding: 24px;
   color: white;
+  overflow: hidden; /* Prevent shimmer from spilling outside */
 }
 .flip-card-front {
   background: linear-gradient(135deg, #006241 0%, #1e3932 100%);
@@ -1205,6 +1207,34 @@ body.dark-theme .sb-btn-cart:hover {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+/* Card Metallic Shimmer Animation */
+.flip-card-front::after, .flip-card-back::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+}
+
+.flip-card:hover .flip-card-front::after,
+.flip-card:hover .flip-card-back::after {
+  animation: cardShimmer 1.2s ease-out;
+}
+
+@keyframes cardShimmer {
+  0% { left: -150%; }
+  100% { left: 150%; }
 }
 
 
