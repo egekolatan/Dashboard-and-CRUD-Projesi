@@ -112,12 +112,15 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, amount, lang 
               </div>
 
               {/* Back side */}
-              <div className="flip-card-back">
-                <div style={{ width: '100%', height: '36px', backgroundColor: '#111', margin: '10px 0', position: 'absolute', top: 10, left: 0 }}></div>
-                <div style={{ width: '80%', height: '24px', backgroundColor: '#fff', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px', color: '#333', fontSize: '12px', fontWeight: 'bold', fontStyle: 'italic', margin: '50px auto 0 auto' }}>
+              <div className="flip-card-back" style={{ position: 'relative', padding: 0 }}>
+                {/* Magnetic Strip */}
+                <div style={{ width: '100%', height: '38px', backgroundColor: '#111', position: 'absolute', top: '15px', left: 0 }}></div>
+                {/* Signature / CVC Strip */}
+                <div style={{ width: '80%', height: '28px', backgroundColor: '#fff', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '10px', color: '#333', fontSize: '13px', fontWeight: 'bold', fontStyle: 'italic', position: 'absolute', top: '68px', left: '10%' }}>
                   {cvc || '•••'}
                 </div>
-                <div style={{ fontSize: '8px', opacity: 0.5, marginTop: '30px', padding: '0 20px', lineHeight: '1.3' }}>
+                {/* Disclaimer Text */}
+                <div style={{ fontSize: '8px', opacity: 0.6, position: 'absolute', bottom: '15px', left: 0, width: '100%', padding: '0 24px', lineHeight: '1.3', textAlign: 'center' }}>
                   This card is property of Kolatan Rewards. Protected by 256-bit SSL secure protocol.
                 </div>
               </div>
