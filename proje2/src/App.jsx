@@ -10,6 +10,7 @@ import ProfileDashboard from './components/ProfileDashboard';
 import PaymentModal from './components/PaymentModal';
 import MobileMenu from './components/MobileMenu';
 import OrderTracker from './components/OrderTracker';
+import SuccessModal from './components/SuccessModal';
 import { translations } from './services/translations';
 import { simulatedLogin, simulatedRegister, simulatedAddBalance, simulatedCheckout } from './services/api';
 import { playAddToCartSound } from './services/audioService';
@@ -339,6 +340,7 @@ export default function App() {
 
   const [lang, setLang] = useState('tr');
   const [activeOrder, setActiveOrder] = useState(null);
+  const [orderSuccess, setOrderSuccess] = useState(null);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [apiLoading, setApiLoading] = useState(false);
@@ -558,10 +560,11 @@ export default function App() {
     // Trigger Live Order Tracker
     setActiveOrder(result.order);
 
-    const alertMsg = lang === 'tr' 
-      ? `Siparişiniz Başarıyla Alındı!\nÖdenen Tutar: ₺${total.toFixed(2)}\nKazandığınız Yıldız: +${result.order.starsEarned}\nKeyifli kahveler! ☕`
-      : `Order Placed Successfully!\nAmount Paid: ₺${total.toFixed(2)}\nStars Earned: +${result.order.starsEarned}\nEnjoy! ☕`;
-    alert(alertMsg);
+    setOrderSuccess({
+      total,
+      starsEarned: result.order.starsEarned,
+      id: result.order.id
+    });
     return true;
   };
 
@@ -836,6 +839,13 @@ export default function App() {
         lang={lang}
         activeOrder={activeOrder}
         onClose={() => setActiveOrder(null)}
+      />
+
+      <SuccessModal 
+        isOpen={orderSuccess !== null}
+        onClose={() => setOrderSuccess(null)}
+        orderData={orderSuccess}
+        lang={lang}
       />
 
       {apiLoading && (
