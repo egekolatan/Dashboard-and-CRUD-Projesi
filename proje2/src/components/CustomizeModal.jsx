@@ -107,282 +107,255 @@ export default function CustomizeModal({ product, onClose, onAddToBag, lang }) {
   return (
     <div className="sb-modal-overlay" onClick={onClose}>
       <div className="sb-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Modal Header */}
-        <div className="sb-modal-header">
-          <h2 className="sb-modal-title">{product.name}</h2>
-          <button className="sb-modal-close" onClick={onClose} aria-label="Kapat">
-            <X size={24} />
-          </button>
-        </div>
+        <button className="sb-modal-close" onClick={onClose} aria-label="Kapat">
+          <X size={20} />
+        </button>
 
-        {/* Tab Navigation */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--sb-border)', marginBottom: '20px' }}>
-          <button 
-            style={{
-              flex: 1,
-              padding: '12px',
-              fontWeight: '600',
-              borderBottom: activeSubTab === 'customize' ? '3px solid var(--sb-green)' : 'none',
-              color: activeSubTab === 'customize' ? 'var(--sb-green)' : 'var(--sb-text-muted)',
-              textAlign: 'center',
-              fontSize: '14px'
-            }}
-            onClick={() => setActiveSubTab('customize')}
-          >
-            {t.customizeTab}
-          </button>
-          <button 
-            style={{
-              flex: 1,
-              padding: '12px',
-              fontWeight: '600',
-              borderBottom: activeSubTab === 'reviews' ? '3px solid var(--sb-green)' : 'none',
-              color: activeSubTab === 'reviews' ? 'var(--sb-green)' : 'var(--sb-text-muted)',
-              textAlign: 'center',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
-            }}
-            onClick={() => setActiveSubTab('reviews')}
-          >
-            <span>{t.commentsTab}</span>
-            <span style={{ backgroundColor: 'var(--sb-green)', color: 'white', fontSize: '11px', padding: '1px 6px', borderRadius: '10px' }}>
-              {reviews.length}
-            </span>
-          </button>
-        </div>
-
-        {activeSubTab === 'customize' ? (
-          /* CUSTOMIZE TAB */
-          <div className="sb-modal-body" style={{ overflowY: 'auto', maxHeight: '60vh', paddingRight: '6px' }}>
-            <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', marginBottom: '30px' }}>
-              <div style={{ flex: '1 1 200px', backgroundColor: 'var(--sb-cream)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', minHeight: '180px' }}>
-                <ProductImage type={product.type} color={product.color} size="150px" />
-              </div>
-              <div style={{ flex: '2 1 300px' }}>
-                <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: 'var(--sb-text-muted)', lineHeight: '1.6' }}>
-                  {product.description}
-                </p>
-                <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
-                  <span style={{ backgroundColor: 'var(--sb-border)', padding: '4px 8px', borderRadius: '4px', fontWeight: '500' }}>
-                    {totalCalories} kcal
-                  </span>
-                  <span style={{ backgroundColor: 'var(--sb-border)', padding: '4px 8px', borderRadius: '4px', fontWeight: '500' }}>
-                    {size} Size
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Size Options */}
-            <h3 className="sb-section-title">{t.selectSize}</h3>
-            <div className="sb-size-selector" style={{ marginBottom: '24px' }}>
-              {[
-                { name: 'Tall', vol: '354 ml' },
-                { name: 'Grande', vol: '473 ml' },
-                { name: 'Venti', vol: '591 ml' }
-              ].map((s) => (
-                <button
-                  key={s.name}
-                  className={`sb-size-btn ${size === s.name ? 'active' : ''}`}
-                  onClick={() => setSize(s.name)}
-                >
-                  <span className="sb-size-icon-cup" style={{ fontSize: s.name === 'Tall' ? '14px' : s.name === 'Grande' ? '18px' : '22px' }}>
-                    ☕
-                  </span>
-                  <span className="sb-size-name">{s.name}</span>
-                  <span className="sb-size-vol">{s.vol}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Milk Options */}
-            {product.hasMilk && (
-              <>
-                <h3 className="sb-section-title">{t.milkOption}</h3>
-                <div style={{ marginBottom: '24px' }}>
-                  <select 
-                    className="sb-select-custom" 
-                    value={milk} 
-                    onChange={(e) => setMilk(e.target.value)}
-                    style={{ width: '100%' }}
-                  >
-                    <option value="Yarım Yağlı Süt">{lang === 'tr' ? 'Yarım Yağlı Süt (Standart)' : '2% Reduced Fat Milk (Standard)'}</option>
-                    <option value="Tam Yağlı Süt">{lang === 'tr' ? 'Tam Yağlı Süt' : 'Whole Milk'}</option>
-                    <option value="Yağsız Süt">{lang === 'tr' ? 'Yağsız Süt' : 'Nonfat Milk'}</option>
-                    <option value="Soya Sütü">{lang === 'tr' ? 'Soya Sütü (+15 TL)' : 'Soy Milk (+15 TL)'}</option>
-                    <option value="Badem Sütü">{lang === 'tr' ? 'Badem Sütü (+15 TL)' : 'Almond Milk (+15 TL)'}</option>
-                    <option value="Yulaf Sütü">{lang === 'tr' ? 'Yulaf Sütü (+15 TL)' : 'Oat Milk (+15 TL)'}</option>
-                  </select>
-                </div>
-              </>
-            )}
-
-            {/* Espresso Options */}
-            {product.defaultShots > 0 && (
-              <>
-                <h3 className="sb-section-title">{t.espressoOption}</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
-                  <div className="sb-customizer-item">
-                    <span className="sb-customizer-label">{lang === 'tr' ? 'Espresso Shot Sayısı' : 'Espresso Shot Count'}</span>
-                    <div className="sb-counter-control">
-                      <button className="sb-counter-btn" onClick={() => setShots(Math.max(1, shots - 1))}>
-                        <Minus size={14} />
-                      </button>
-                      <span className="sb-counter-value">{shots}</span>
-                      <button className="sb-counter-btn" onClick={() => setShots(shots + 1)}>
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="sb-customizer-item">
-                    <span className="sb-customizer-label">{t.caffeineOption}</span>
-                    <select className="sb-select-custom" value={decaf} onChange={(e) => setDecaf(e.target.value)}>
-                      <option value="Regular">{lang === 'tr' ? 'Normal Kafein' : 'Regular Caffeine'}</option>
-                      <option value="Decaf">{lang === 'tr' ? 'Kafeinsiz (Decaf)' : 'Decaf (Decaf)'}</option>
-                    </select>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Syrup Options */}
-            {product.category !== 'bakery' && (
-              <>
-                <h3 className="sb-section-title">{t.syrupOption}</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '16px' }}>
-                  <div className="sb-customizer-item">
-                    <span className="sb-customizer-label">{lang === 'tr' ? 'Karamel Şurubu (Pompa)' : 'Caramel Syrup (Pumps)'}</span>
-                    <div className="sb-counter-control">
-                      <button className="sb-counter-btn" onClick={() => setCaramelSyrup(Math.max(0, caramelSyrup - 1))}>
-                        <Minus size={14} />
-                      </button>
-                      <span className="sb-counter-value">{caramelSyrup}</span>
-                      <button className="sb-counter-btn" onClick={() => setCaramelSyrup(caramelSyrup + 1)}>
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="sb-customizer-item">
-                    <span className="sb-customizer-label">{lang === 'tr' ? 'Vanilya Şurubu (Pompa)' : 'Vanilla Syrup (Pumps)'}</span>
-                    <div className="sb-counter-control">
-                      <button className="sb-counter-btn" onClick={() => setVanillaSyrup(Math.max(0, vanillaSyrup - 1))}>
-                        <Minus size={14} />
-                      </button>
-                      <span className="sb-counter-value">{vanillaSyrup}</span>
-                      <button className="sb-counter-btn" onClick={() => setVanillaSyrup(vanillaSyrup + 1)}>
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="sb-customizer-item">
-                    <span className="sb-customizer-label">{lang === 'tr' ? 'Fındık Şurubu (Pompa)' : 'Hazelnut Syrup (Pumps)'}</span>
-                    <div className="sb-counter-control">
-                      <button className="sb-counter-btn" onClick={() => setHazelnutSyrup(Math.max(0, hazelnutSyrup - 1))}>
-                        <Minus size={14} />
-                      </button>
-                      <span className="sb-counter-value">{hazelnutSyrup}</span>
-                      <button className="sb-counter-btn" onClick={() => setHazelnutSyrup(hazelnutSyrup + 1)}>
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+        {/* Left Side: Product Illustration & Basic Info */}
+        <div className="sb-modal-left">
+          <ProductImage type={product.type} color={product.color} size="75%" />
+          <span className="sb-modal-cal-large">{totalCalories} kcal</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '16px', background: 'rgba(255,255,255,0.7)', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold' }}>
+            <Star size={16} fill="#ffb300" stroke="#ffb300" />
+            <span>{averageRating} / 5.0 ({reviews.length} {lang === 'tr' ? 'Yorum' : 'Reviews'})</span>
           </div>
-        ) : (
-          /* REVIEWS TAB */
-          <div className="sb-modal-body" style={{ overflowY: 'auto', maxHeight: '60vh', paddingRight: '6px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', backgroundColor: 'var(--sb-cream)', padding: '16px', borderRadius: '12px' }}>
-              <div>
-                <span style={{ fontSize: '13px', color: 'var(--sb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.averageRating}</span>
-                <h4 style={{ margin: '4px 0 0 0', fontSize: '32px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--sb-green)' }}>
-                  {averageRating}
-                  <span style={{ fontSize: '20px', color: '#ffb300' }}>★</span>
-                </h4>
-              </div>
-              <div style={{ fontSize: '13px', color: 'var(--sb-text-muted)' }}>
-                {reviews.length} {lang === 'tr' ? 'Değerlendirme' : 'Reviews'}
-              </div>
-            </div>
+        </div>
 
-            {/* Comment Form */}
-            <form onSubmit={handleAddReview} style={{ borderBottom: '1px solid var(--sb-border)', paddingBottom: '24px', marginBottom: '24px' }}>
-              <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px' }}>{t.writeComment}</h4>
-              
-              {/* Star Rating Select */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
+        {/* Right Side: Tab Bar, Scrollable Customizer / Reviews, and Footer */}
+        <div className="sb-modal-right">
+          {/* Sub Tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--sb-border)', backgroundColor: 'var(--sb-cream)' }}>
+            <button 
+              onClick={() => setActiveSubTab('customize')} 
+              style={{ flex: 1, padding: '14px', fontWeight: 'bold', fontSize: '13px', color: activeSubTab === 'customize' ? 'var(--sb-green)' : 'var(--sb-text-muted)', borderBottom: activeSubTab === 'customize' ? '3px solid var(--sb-green)' : 'none', textTransform: 'uppercase' }}
+            >
+              {t.customizeTab}
+            </button>
+            <button 
+              onClick={() => setActiveSubTab('reviews')} 
+              style={{ flex: 1, padding: '14px', fontWeight: 'bold', fontSize: '13px', color: activeSubTab === 'reviews' ? 'var(--sb-green)' : 'var(--sb-text-muted)', borderBottom: activeSubTab === 'reviews' ? '3px solid var(--sb-green)' : 'none', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+            >
+              <span>{t.commentsTab}</span>
+              <span style={{ backgroundColor: 'var(--sb-green)', color: 'white', fontSize: '11px', padding: '1px 6px', borderRadius: '10px' }}>
+                {reviews.length}
+              </span>
+            </button>
+          </div>
+
+          {activeSubTab === 'customize' ? (
+            /* CUSTOMIZE TAB CONTENT */
+            <div className="sb-modal-content-scroll">
+              <h2 className="sb-modal-title">{product.name}</h2>
+              <p className="sb-modal-desc">{product.description}</p>
+
+              {/* Size Options */}
+              <h3 className="sb-section-title">{t.selectSize}</h3>
+              <div className="sb-sizes-row">
+                {[
+                  { name: 'Tall', vol: '354 ml' },
+                  { name: 'Grande', vol: '473 ml' },
+                  { name: 'Venti', vol: '591 ml' }
+                ].map((s) => (
                   <button
-                    key={star}
-                    type="button"
-                    onClick={() => setNewRating(star)}
-                    style={{ color: star <= newRating ? '#ffb300' : 'var(--sb-border)', transition: 'transform 0.1s' }}
+                    key={s.name}
+                    className={`sb-size-btn ${size === s.name ? 'active' : ''}`}
+                    onClick={() => setSize(s.name)}
                   >
-                    <Star fill={star <= newRating ? '#ffb300' : 'none'} size={24} />
+                    <span className="sb-size-icon-cup" style={{ fontSize: s.name === 'Tall' ? '14px' : s.name === 'Grande' ? '18px' : '22px' }}>
+                      ☕
+                    </span>
+                    <span className="sb-size-name">{s.name}</span>
+                    <span className="sb-size-vol">{s.vol}</span>
                   </button>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <input
-                  type="text"
-                  placeholder={t.commentPlaceholder}
-                  className="sb-search-input"
-                  style={{ flexGrow: 1 }}
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                />
-                <button type="submit" className="sb-btn-solid" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px' }}>
-                  <Send size={16} />
-                  <span>{t.submitComment}</span>
-                </button>
-              </div>
-            </form>
-
-            {/* Reviews List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {reviews.length === 0 ? (
-                <p style={{ textAlign: 'center', color: 'var(--sb-text-muted)', fontSize: '14px', padding: '20px 0' }}>
-                  {t.noCommentsYet}
-                </p>
-              ) : (
-                reviews.map((r, idx) => (
-                  <div key={idx} style={{ padding: '16px', border: '1px solid var(--sb-border)', borderRadius: '12px', backgroundColor: 'var(--sb-bg)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <strong style={{ fontSize: '14px' }}>{r.author}</strong>
-                      <span style={{ fontSize: '12px', color: 'var(--sb-text-muted)' }}>{r.date}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px', color: '#ffb300', marginBottom: '8px' }}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={14} fill={i < r.rating ? '#ffb300' : 'none'} stroke={i < r.rating ? '#ffb300' : 'var(--sb-border)'} />
-                      ))}
-                    </div>
-                    <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.5', color: 'var(--sb-dark)' }}>
-                      {r.text}
-                    </p>
+              {/* Milk Options */}
+              {product.hasMilk && (
+                <>
+                  <h3 className="sb-section-title">{t.milkOption}</h3>
+                  <div style={{ marginBottom: '24px' }}>
+                    <select 
+                      className="sb-select-custom" 
+                      value={milk} 
+                      onChange={(e) => setMilk(e.target.value)}
+                      style={{ width: '100%' }}
+                    >
+                      <option value="Yarım Yağlı Süt">{lang === 'tr' ? 'Yarım Yağlı Süt (Standart)' : '2% Reduced Fat Milk (Standard)'}</option>
+                      <option value="Tam Yağlı Süt">{lang === 'tr' ? 'Tam Yağlı Süt' : 'Whole Milk'}</option>
+                      <option value="Yağsız Süt">{lang === 'tr' ? 'Yağsız Süt' : 'Nonfat Milk'}</option>
+                      <option value="Soya Sütü">{lang === 'tr' ? 'Soya Sütü (+15 TL)' : 'Soy Milk (+15 TL)'}</option>
+                      <option value="Badem Sütü">{lang === 'tr' ? 'Badem Sütü (+15 TL)' : 'Almond Milk (+15 TL)'}</option>
+                      <option value="Yulaf Sütü">{lang === 'tr' ? 'Yulaf Sütü (+15 TL)' : 'Oat Milk (+15 TL)'}</option>
+                    </select>
                   </div>
-                ))
+                </>
+              )}
+
+              {/* Espresso Options */}
+              {product.defaultShots > 0 && (
+                <>
+                  <h3 className="sb-section-title">{t.espressoOption}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+                    <div className="sb-customizer-item">
+                      <span className="sb-customizer-label">{lang === 'tr' ? 'Espresso Shot Sayısı' : 'Espresso Shot Count'}</span>
+                      <div className="sb-counter-control">
+                        <button className="sb-counter-btn" onClick={() => setShots(Math.max(1, shots - 1))}>
+                          <Minus size={14} />
+                        </button>
+                        <span className="sb-counter-value">{shots}</span>
+                        <button className="sb-counter-btn" onClick={() => setShots(shots + 1)}>
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="sb-customizer-item">
+                      <span className="sb-customizer-label">{t.caffeineOption}</span>
+                      <select className="sb-select-custom" value={decaf} onChange={(e) => setDecaf(e.target.value)}>
+                        <option value="Regular">{lang === 'tr' ? 'Normal Kafein' : 'Regular Caffeine'}</option>
+                        <option value="Decaf">{lang === 'tr' ? 'Kafeinsiz (Decaf)' : 'Decaf (Decaf)'}</option>
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Syrup Options */}
+              {product.category !== 'bakery' && (
+                <>
+                  <h3 className="sb-section-title">{t.syrupOption}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '16px' }}>
+                    <div className="sb-customizer-item">
+                      <span className="sb-customizer-label">{lang === 'tr' ? 'Karamel Şurubu (Pompa)' : 'Caramel Syrup (Pumps)'}</span>
+                      <div className="sb-counter-control">
+                        <button className="sb-counter-btn" onClick={() => setCaramelSyrup(Math.max(0, caramelSyrup - 1))}>
+                          <Minus size={14} />
+                        </button>
+                        <span className="sb-counter-value">{caramelSyrup}</span>
+                        <button className="sb-counter-btn" onClick={() => setCaramelSyrup(caramelSyrup + 1)}>
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="sb-customizer-item">
+                      <span className="sb-customizer-label">{lang === 'tr' ? 'Vanilya Şurubu (Pompa)' : 'Vanilla Syrup (Pumps)'}</span>
+                      <div className="sb-counter-control">
+                        <button className="sb-counter-btn" onClick={() => setVanillaSyrup(Math.max(0, vanillaSyrup - 1))}>
+                          <Minus size={14} />
+                        </button>
+                        <span className="sb-counter-value">{vanillaSyrup}</span>
+                        <button className="sb-counter-btn" onClick={() => setVanillaSyrup(vanillaSyrup + 1)}>
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="sb-customizer-item">
+                      <span className="sb-customizer-label">{lang === 'tr' ? 'Fındık Şurubu (Pompa)' : 'Hazelnut Syrup (Pumps)'}</span>
+                      <div className="sb-counter-control">
+                        <button className="sb-counter-btn" onClick={() => setHazelnutSyrup(Math.max(0, hazelnutSyrup - 1))}>
+                          <Minus size={14} />
+                        </button>
+                        <span className="sb-counter-value">{hazelnutSyrup}</span>
+                        <button className="sb-counter-btn" onClick={() => setHazelnutSyrup(hazelnutSyrup + 1)}>
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
-          </div>
-        )}
+          ) : (
+            /* REVIEWS TAB CONTENT */
+            <div className="sb-modal-content-scroll">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', backgroundColor: 'var(--sb-cream)', padding: '16px', borderRadius: '12px' }}>
+                <div>
+                  <span style={{ fontSize: '13px', color: 'var(--sb-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.averageRating}</span>
+                  <h4 style={{ margin: '4px 0 0 0', fontSize: '32px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--sb-green)' }}>
+                    {averageRating}
+                    <span style={{ fontSize: '20px', color: '#ffb300' }}>★</span>
+                  </h4>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--sb-text-muted)' }}>
+                  {reviews.length} {lang === 'tr' ? 'Değerlendirme' : 'Reviews'}
+                </div>
+              </div>
 
-        {/* Modal Footer */}
-        {activeSubTab === 'customize' && (
-          <div className="sb-modal-footer">
-            <div>
-              <span className="sb-total-label">{t.total}</span>
-              <div className="sb-total-price">₺{totalPrice.toFixed(2)}</div>
+              {/* Comment Form */}
+              <form onSubmit={handleAddReview} style={{ borderBottom: '1px solid var(--sb-border)', paddingBottom: '24px', marginBottom: '24px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px' }}>{t.writeComment}</h4>
+                
+                {/* Star Rating Select */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setNewRating(star)}
+                      style={{ color: star <= newRating ? '#ffb300' : 'var(--sb-border)', transition: 'transform 0.1s' }}
+                    >
+                      <Star fill={star <= newRating ? '#ffb300' : 'none'} size={24} />
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    type="text"
+                    placeholder={t.commentPlaceholder}
+                    className="sb-search-input"
+                    style={{ flexGrow: 1 }}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                  />
+                  <button type="submit" className="sb-btn-solid" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px' }}>
+                    <Send size={16} />
+                    <span>{t.submitComment}</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* Reviews List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {reviews.length === 0 ? (
+                  <p style={{ textAlign: 'center', color: 'var(--sb-text-muted)', fontSize: '14px', padding: '20px 0' }}>
+                    {t.noCommentsYet}
+                  </p>
+                ) : (
+                  reviews.map((r, idx) => (
+                    <div key={idx} style={{ padding: '16px', border: '1px solid var(--sb-border)', borderRadius: '12px', backgroundColor: 'var(--sb-bg)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <strong style={{ fontSize: '14px' }}>{r.author}</strong>
+                        <span style={{ fontSize: '12px', color: 'var(--sb-text-muted)' }}>{r.date}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '2px', color: '#ffb300', marginBottom: '8px' }}>
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={14} fill={i < r.rating ? '#ffb300' : 'none'} stroke={i < r.rating ? '#ffb300' : 'var(--sb-border)'} />
+                        ))}
+                      </div>
+                      <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.5', color: 'var(--sb-dark)' }}>
+                        {r.text}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            <button className="sb-btn-solid" style={{ padding: '12px 30px' }} onClick={handleAddClick}>
-              {t.addToBag}
-            </button>
-          </div>
-        )}
+          )}
+
+          {/* Modal Footer */}
+          {activeSubTab === 'customize' && (
+            <div className="sb-modal-footer">
+              <div className="sb-modal-price-label">
+                <span className="sb-modal-price-title">{t.total}</span>
+                <span className="sb-modal-price-val">₺{totalPrice.toFixed(2)}</span>
+              </div>
+              <button className="sb-modal-add-btn" onClick={handleAddClick}>
+                {t.addToBag}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
